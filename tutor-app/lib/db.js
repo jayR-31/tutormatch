@@ -27,6 +27,8 @@ function initializeDb(db) {
       email TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       role TEXT NOT NULL CHECK(role IN ('student', 'tutor')),
+      zip_code TEXT DEFAULT '',
+      timezone TEXT DEFAULT '',
       onboarded INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -111,6 +113,17 @@ function initializeDb(db) {
       }
     }
     
+    // Check users table for zip_code and timezone
+    const userColumns = db.pragma('table_info(users)');
+    if (userColumns.length > 0) {
+      if (!userColumns.some(col => col.name === 'zip_code')) {
+        db.exec("ALTER TABLE users ADD COLUMN zip_code TEXT DEFAULT ''");
+      }
+      if (!userColumns.some(col => col.name === 'timezone')) {
+        db.exec("ALTER TABLE users ADD COLUMN timezone TEXT DEFAULT ''");
+      }
+    }
+
     // Check sessions table for format column
     const sessionColumns = db.pragma('table_info(sessions)');
     if (sessionColumns.length > 0) {

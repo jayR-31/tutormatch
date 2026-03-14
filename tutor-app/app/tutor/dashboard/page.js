@@ -177,7 +177,7 @@ export default function TutorDashboard() {
 
   const tabs = [
     { id: 'sessions', label: 'Upcoming Sessions' },
-    { id: 'messages', label: 'Messages' },
+    { id: 'messages', label: 'Messages (Tutor)' },
     { id: 'profile', label: 'My Profile' },
     { id: 'edit', label: 'Edit Profile' },
   ];
@@ -188,7 +188,7 @@ export default function TutorDashboard() {
       <main className="min-h-screen mesh-bg pt-24 pb-12">
         <div className="w-full mx-auto px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20 max-w-[100vw]">
           {/* Tabs */}
-          <div className="flex gap-2 mb-8 bg-white/40 glass-panel p-1.5 rounded-2xl w-max">
+          <div className="flex gap-2 mb-8 bg-white/40 glass-panel p-1.5 rounded-2xl w-max mx-auto">
           {tabs.map(tab => (
             <button
               key={tab.id}
@@ -269,7 +269,7 @@ export default function TutorDashboard() {
 
         {/* Sessions Tab */}
         {activeTab === 'sessions' && (
-          <div className="max-w-2xl bg-white/60 glass-panel rounded-3xl p-8 bento-hover">
+          <div className="max-w-2xl bg-white/60 glass-panel rounded-3xl p-8 bento-hover mx-auto">
             <h2 className="text-xl font-bold tracking-tight text-gray-900 mb-8">Upcoming Sessions</h2>
             {upcomingSessions.length === 0 ? (
               <div className="text-center py-10">
@@ -304,7 +304,7 @@ export default function TutorDashboard() {
 
         {/* My Profile Tab */}
         {activeTab === 'profile' && profile && (
-          <div className="max-w-2xl bg-white/60 glass-panel rounded-3xl p-8 bento-hover">
+          <div className="max-w-2xl bg-white/60 glass-panel rounded-3xl p-8 bento-hover mx-auto">
             <div className="flex items-start gap-5 mb-8">
               <div className="w-20 h-20 rounded-2xl bg-gray-900 flex items-center justify-center text-white font-mono font-bold text-3xl flex-shrink-0 shadow-sm">
                 {profile.name?.charAt(0)?.toUpperCase() || 'T'}
@@ -352,7 +352,7 @@ export default function TutorDashboard() {
 
         {/* Edit Profile Tab */}
         {activeTab === 'edit' && editForm && (
-          <div className="max-w-2xl bg-white/60 glass-panel rounded-3xl p-8 bento-hover">
+          <div className="max-w-2xl bg-white/60 glass-panel rounded-3xl p-8 bento-hover mx-auto">
             <h2 className="text-xl font-bold tracking-tight text-gray-900 mb-8">Edit Profile</h2>
             <form onSubmit={saveProfile} className="space-y-6">
               {editMsg && (

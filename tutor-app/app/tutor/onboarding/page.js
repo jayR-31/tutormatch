@@ -110,7 +110,7 @@ export default function TutorOnboarding() {
                   onChange={(e) => setForm({...form, age: e.target.value})}
                   className="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all"
                   placeholder="Age"
-                  min="18"
+                  min="13"
                   max="100"
                 />
               </div>

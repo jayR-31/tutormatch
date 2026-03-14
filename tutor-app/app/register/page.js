@@ -13,6 +13,7 @@ function RegisterForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [zipCode, setZipCode] = useState('');
   const [role, setRole] = useState(defaultRole);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,7 +38,7 @@ function RegisterForm() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, role }),
+        body: JSON.stringify({ email, password, role, zipCode }),
       });
 
       const data = await res.json();
@@ -133,6 +134,20 @@ function RegisterForm() {
             required
             className="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all"
             placeholder="Repeat password"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-mono uppercase tracking-widest text-gray-500 font-semibold mb-2">Zip Code</label>
+          <input
+            type="text"
+            value={zipCode}
+            onChange={(e) => setZipCode(e.target.value)}
+            required
+            pattern="[0-9]*"
+            inputMode="numeric"
+            className="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all"
+            placeholder="5-digit zip code"
           />
         </div>
 
