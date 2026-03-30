@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 
-const DB_PATH = path.join(process.cwd(), 'data', 'tutor-app.db');
+const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), 'data', 'tutor-app.db');
 
 let db;
 
