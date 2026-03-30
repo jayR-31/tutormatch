@@ -11,7 +11,10 @@ export default function ChatThread({ messages, currentUserId, otherId, onSendMes
   const [propTime, setPropTime] = useState('');
   const [propDuration, setPropDuration] = useState('60');
   const [propFormat, setPropFormat] = useState('online');
+  const [propSubjects, setPropSubjects] = useState([]);
   const [isProposing, setIsProposing] = useState(false);
+
+  const SUBJECTS_LIST = ['Math', 'Science', 'English', 'History', 'Other'];
 
   const messagesEndRef = useRef(null);
 
@@ -37,10 +40,12 @@ export default function ChatThread({ messages, currentUserId, otherId, onSendMes
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           receiverId: otherId,
+          conversationId: messages[0]?.conversation_id,
           date: propDate,
           time: propTime,
           duration_minutes: parseInt(propDuration),
-          format: propFormat
+          format: propFormat,
+          subjects: propSubjects
         })
       });
       if (res.ok) {
@@ -49,6 +54,7 @@ export default function ChatThread({ messages, currentUserId, otherId, onSendMes
         setPropTime('');
         setPropDuration('60');
         setPropFormat('online');
+        setPropSubjects([]);
         if (onRefreshMessages) onRefreshMessages();
       }
     } catch (err) {
@@ -73,17 +79,21 @@ export default function ChatThread({ messages, currentUserId, otherId, onSendMes
   };
 
   return (
-    <div className="flex flex-col h-full bg-white/40 relative">
+    <div className="flex flex-col h-full bg-stone-50/50 relative">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-100 bg-white/60 glass-panel">
-        <h3 className="text-sm font-mono uppercase tracking-widest text-gray-900 font-semibold m-0">{otherName || 'Conversation'}</h3>
+      <div className="px-8 py-5 border-b border-stone-100 bg-white/80 backdrop-blur-md sticky top-0 z-10">
+        <div className="flex items-center gap-3">
+          <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(153,27,27,0.5)]"></div>
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-600 m-0">{otherName || 'Secure Thread'}</h3>
+        </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div className="flex-1 overflow-y-auto p-8 space-y-6">
         {messages.length === 0 && (
-          <div className="text-center text-gray-400 text-sm font-mono py-10">
-            No messages yet. Start the conversation!
+          <div className="flex flex-col items-center justify-center py-20 opacity-30 grayscale">
+            <span className="text-4xl mb-4">✨</span>
+            <p className="text-xs font-bold uppercase tracking-widest text-stone-400">Begin the discovery</p>
           </div>
         )}
         {messages.map((msg) => {
@@ -91,70 +101,89 @@ export default function ChatThread({ messages, currentUserId, otherId, onSendMes
           const isProposal = msg.type === 'proposal';
 
           return (
-            <div key={msg.id} className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+            <div key={msg.id} className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2 duration-500`}>
               <div
-                className={`max-w-xs sm:max-w-md px-5 py-3.5 rounded-2xl text-sm transition-all ${
+                className={`max-w-[85%] sm:max-w-md px-6 py-4 rounded-[24px] text-sm shadow-sm transition-all relative ${
                   isOwn
-                    ? 'bg-gray-900 text-white rounded-br-sm shadow-sm'
-                    : 'bg-white/80 border border-gray-200 text-gray-800 rounded-bl-sm bento-hover'
-                } ${isProposal ? 'border-orange-200 bg-orange-50/50' : ''}`}
+                    ? 'bg-red-600 text-white rounded-br-none'
+                    : 'bg-white border border-stone-100 text-stone-700 rounded-bl-none'
+                } ${isProposal ? 'border-red-100 bg-red-50/10 !max-w-xs' : ''}`}
               >
                 {!isOwn && (
-                  <p className="text-xs font-mono uppercase tracking-widest text-orange-600 font-semibold mb-1 m-0">{msg.sender_name}</p>
+                  <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 m-0 ${isProposal ? 'text-red-600' : 'text-stone-400'}`}>
+                    {msg.sender_name}
+                  </p>
                 )}
                 
                 {isProposal ? (
                   <div className="mt-1">
-                    <p className="font-semibold text-gray-900 m-0 mb-2">🗓 Session Proposal</p>
-                    <div className="text-sm text-gray-700 bg-white/60 p-3 rounded-lg border border-gray-100 mb-3 font-mono">
-                      <div className="flex justify-between mb-1">
-                        <span className="text-gray-400">Date:</span>
-                        <span>{msg.session_date}</span>
+                    <div className="flex items-center gap-2 mb-4 border-b border-red-100 pb-3">
+                      <span className="text-lg">🗓️</span>
+                      <p className="font-bold text-stone-900 m-0 tracking-tight">Session Proposal</p>
+                    </div>
+                    <div className="text-[11px] text-stone-600 space-y-3 font-bold tracking-tight mb-4">
+                      <div className="flex justify-between items-center bg-white/50 p-2.5 rounded-xl border border-red-50/50">
+                        <span className="text-stone-400 uppercase tracking-tighter">Event Date</span>
+                        <span className="text-red-600">{msg.session_date}</span>
                       </div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-gray-400">Time:</span>
-                        <span>{msg.session_time}</span>
+                      <div className="flex justify-between items-center bg-white/50 p-2.5 rounded-xl border border-red-50/50">
+                        <span className="text-stone-400 uppercase tracking-tighter">Scheduled Time</span>
+                        <span className="text-red-600">{msg.session_time}</span>
                       </div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-gray-400">Duration:</span>
-                        <span>{msg.session_duration} min</span>
+                      <div className="flex justify-between items-center bg-white/50 p-2.5 rounded-xl border border-red-50/50">
+                        <span className="text-stone-400 uppercase tracking-tighter">Block Length</span>
+                        <span className="text-red-600">{msg.session_duration} min</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Format:</span>
-                        <span className="capitalize">{msg.session_format || 'online'}</span>
+                      <div className="flex justify-between items-center bg-white/50 p-2.5 rounded-xl border border-red-50/50">
+                        <span className="text-stone-400 uppercase tracking-tighter">Venue Format</span>
+                        <span className="text-red-600 capitalize">{msg.session_format || 'online'}</span>
                       </div>
+                      {msg.session_subjects && JSON.parse(msg.session_subjects).length > 0 && (
+                        <div className="pt-2">
+                          <span className="text-stone-400 text-[9px] uppercase tracking-widest block mb-2">Subject Areas</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {JSON.parse(msg.session_subjects).map((s, idx) => (
+                              <span key={idx} className="bg-red-600 text-white px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-tighter">{s}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     
                     {msg.session_status === 'pending' ? (
                       isOwn ? (
-                        <p className="text-xs text-orange-500 font-medium italic m-0">Awaiting response...</p>
+                        <div className="bg-stone-50 text-stone-400 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest text-center border border-stone-100">
+                          Awaiting Confirmation
+                        </div>
                       ) : (
-                        <div className="flex gap-2 mt-2">
+                        <div className="flex gap-2 mt-4">
                           <button 
                             onClick={() => handleProposalResponse(msg.reference_id, 'accepted')}
-                            className="flex-1 bg-gray-900 text-white py-2 rounded-lg text-xs font-medium hover:bg-green-600 transition-colors cursor-pointer border-0"
+                            className="flex-1 bg-red-600 text-white py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-stone-900 transition-all cursor-pointer border-0 shadow-lg shadow-red-600/10 active:scale-95"
                           >
                             Accept
                           </button>
                           <button 
                             onClick={() => handleProposalResponse(msg.reference_id, 'declined')}
-                            className="flex-1 bg-white border border-gray-200 text-gray-600 py-2 rounded-lg text-xs font-medium hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors cursor-pointer"
+                            className="flex-1 bg-white border border-stone-200 text-stone-400 py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-stone-50 hover:text-red-500 hover:border-red-100 transition-all cursor-pointer active:scale-95"
                           >
                             Decline
                           </button>
                         </div>
                       )
                     ) : (
-                      <p className={`text-xs font-medium italic m-0 ${msg.session_status === 'accepted' ? 'text-green-600' : 'text-red-500'}`}>
-                        {msg.session_status === 'accepted' ? '✅ Accepted' : '❌ Declined'}
-                      </p>
+                      <div className={`py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest text-center border ${
+                        msg.session_status === 'accepted' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-500 border-red-100'
+                      }`}>
+                        {msg.session_status === 'accepted' ? '✅ Session Confirmed' : '❌ Proposal Declined'}
+                      </div>
                     )}
                   </div>
                 ) : (
-                  <p className="m-0 leading-relaxed font-light">{msg.content}</p>
+                  <p className="m-0 leading-relaxed font-medium tracking-tight bg-transparent border-0">{msg.content}</p>
                 )}
                 
-                <p className={`text-[10px] font-mono mt-2 m-0 text-right ${isOwn ? 'text-gray-400' : 'text-gray-400'}`}>
+                <p className={`text-[9px] font-bold uppercase tracking-tighter mt-3 m-0 text-right opacity-40`}>
                   {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
@@ -166,39 +195,42 @@ export default function ChatThread({ messages, currentUserId, otherId, onSendMes
 
       {/* Proposal Popover */}
       {showProposal && (
-        <div className="absolute bottom-20 left-6 sm:w-80 bg-white border border-gray-200 rounded-2xl shadow-xl p-5 z-20 bento-hover">
-          <div className="flex justify-between items-center mb-4">
-            <h4 className="text-sm font-bold text-gray-900 m-0">Propose a Session</h4>
-            <button onClick={() => setShowProposal(false)} className="text-gray-400 hover:text-gray-700 bg-transparent border-0 cursor-pointer">✕</button>
+        <div className="absolute bottom-24 left-8 right-8 sm:left-auto sm:w-96 premium-card p-8 z-20 shadow-2xl animate-in zoom-in-95 duration-200 border-red-100">
+          <div className="flex justify-between items-center mb-8">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">📅</span>
+              <h4 className="text-lg font-bold text-stone-900 m-0 tracking-tight">Schedule Session</h4>
+            </div>
+            <button onClick={() => setShowProposal(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-900 bg-stone-50 hover:bg-stone-100 transition-all border-0 cursor-pointer text-xs">✕</button>
           </div>
-          <form onSubmit={handleSendProposal} className="space-y-4">
-            <div>
-              <label className="block text-xs font-mono uppercase text-gray-500 mb-1">Date</label>
+          <form onSubmit={handleSendProposal} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-400 ml-1">Event Date</label>
               <input 
                 type="date" 
                 required
                 value={propDate}
                 onChange={e => setPropDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-orange-400"
+                className="w-full px-4 py-3 bg-stone-50 border border-stone-100 rounded-xl text-sm outline-none focus:border-red-300 focus:ring-4 focus:ring-red-500/5 transition-all"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-mono uppercase text-gray-500 mb-1">Time</label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-400 ml-1">Start Time</label>
                 <input 
                   type="time" 
                   required
                   value={propTime}
                   onChange={e => setPropTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-orange-400"
+                  className="w-full px-4 py-3 bg-stone-50 border border-stone-100 rounded-xl text-sm outline-none focus:border-red-300 focus:ring-4 focus:ring-red-500/5 transition-all"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-mono uppercase text-gray-500 mb-1">Duration</label>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-400 ml-1">Duration</label>
                 <select 
                   value={propDuration}
                   onChange={e => setPropDuration(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-orange-400 bg-white"
+                  className="w-full px-4 py-3 bg-stone-50 border border-stone-100 rounded-xl text-sm outline-none focus:border-red-300 focus:ring-4 focus:ring-red-500/5 transition-all bg-white"
                 >
                   <option value="30">30 min</option>
                   <option value="45">45 min</option>
@@ -208,53 +240,89 @@ export default function ChatThread({ messages, currentUserId, otherId, onSendMes
                 </select>
               </div>
             </div>
-            <div>
-              <label className="block text-xs font-mono uppercase text-gray-500 mb-1">Format</label>
-              <select 
-                value={propFormat}
-                onChange={e => setPropFormat(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-orange-400 bg-white"
-              >
-                <option value="online">💻 Online</option>
-                <option value="in-person">🏫 In-Person</option>
-              </select>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-400 ml-1">Format Selection</label>
+              <div className="flex gap-2">
+                {['online', 'in-person'].map(f => (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => setPropFormat(f)}
+                    className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all cursor-pointer ${
+                      propFormat === f ? 'bg-stone-900 text-white border-stone-900 shadow-lg' : 'bg-white text-stone-500 border-stone-100 hover:border-red-100'
+                    }`}
+                  >
+                    {f === 'online' ? '💻 Online' : '🏠 In-Person'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-3">
+              <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-400 ml-1">Topic Areas (Max 3)</label>
+              <div className="flex flex-wrap gap-1.5">
+                {SUBJECTS_LIST.map(subject => {
+                  const isSelected = propSubjects.includes(subject);
+                  return (
+                    <button
+                      key={subject}
+                      type="button"
+                      onClick={() => {
+                        if (isSelected) {
+                          setPropSubjects(propSubjects.filter(s => s !== subject));
+                        } else if (propSubjects.length < 3) {
+                          setPropSubjects([...propSubjects, subject]);
+                        }
+                      }}
+                      className={`px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-tight transition-all ${
+                        isSelected 
+                          ? 'bg-red-600 text-white border-red-600 shadow-md' 
+                          : 'bg-white text-stone-400 border border-stone-100 hover:border-red-100'
+                      } border cursor-pointer`}
+                    >
+                      {subject}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <button 
               type="submit" 
               disabled={isProposing}
-              className="w-full bg-orange-500 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-orange-600 border-0 cursor-pointer disabled:opacity-50"
+              className="w-full bg-red-600 text-white py-4 rounded-[20px] text-sm font-bold uppercase tracking-[0.15em] hover:bg-stone-900 border-0 cursor-pointer disabled:opacity-50 transition-all shadow-xl shadow-red-600/20 active:scale-95"
             >
-              {isProposing ? 'Sending...' : 'Send Proposal'}
+              {isProposing ? 'Syncing...' : 'Dispatch Proposal'}
             </button>
           </form>
         </div>
       )}
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="px-6 py-4 border-t border-gray-100 bg-white/60 glass-panel flex gap-3 relative">
+      <form onSubmit={handleSubmit} className="px-8 py-6 border-t border-stone-100 bg-white/90 backdrop-blur-md flex gap-4 relative">
         <button
           type="button"
           onClick={() => setShowProposal(!showProposal)}
-          className={`flex items-center justify-center w-12 h-[50px] rounded-xl text-lg border-0 cursor-pointer transition-colors ${
-            showProposal ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+          className={`flex items-center justify-center w-[60px] h-[60px] rounded-2xl text-xl border-0 cursor-pointer transition-all shadow-sm ${
+            showProposal ? 'bg-red-600 text-white rotate-45' : 'bg-stone-100 text-stone-400 hover:bg-red-50 hover:text-red-600'
           }`}
           title="Schedule Session"
         >
-          📅
+          {showProposal ? '✕' : '📅'}
         </button>
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type your message..."
-          className="flex-1 px-5 py-3.5 bg-white/80 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all font-light"
-        />
+        <div className="flex-1 relative">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Compose message..."
+            className="w-full h-[60px] pl-6 pr-6 bg-stone-50 border border-stone-100 rounded-2xl text-sm outline-none focus:border-red-300 focus:ring-8 focus:ring-red-500/5 transition-all text-stone-700 font-medium placeholder:text-stone-300"
+          />
+        </div>
         <button
           type="submit"
           disabled={!newMessage.trim()}
-          className="bg-gray-900 text-white px-6 h-[50px] rounded-xl text-sm font-semibold border-0 cursor-pointer hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="bg-stone-900 text-white px-8 h-[60px] rounded-2xl text-[11px] font-bold uppercase tracking-[0.2em] border-0 cursor-pointer hover:bg-red-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xl shadow-stone-900/10 active:scale-95"
         >
-          Send
+          Dispatch
         </button>
       </form>
     </div>

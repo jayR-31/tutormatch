@@ -57,33 +57,27 @@ function RegisterForm() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white/60 glass-panel rounded-3xl p-8 sm:p-10 bento-hover">
+    <div className="w-full max-w-md mx-auto bg-white/60 glass-panel rounded-[32px] p-8 sm:p-12 bento-hover shadow-2xl shadow-red-900/5">
       <div className="text-center mb-10 flex flex-col items-center">
         <img 
           src="/logo-v2.png" 
           alt="Tutor Match Logo" 
-          className="h-28 sm:h-36 w-auto object-contain mb-8"
+          className="h-28 sm:h-32 w-auto object-contain mb-8 hover:scale-105 transition-transform duration-500"
         />
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">Create Account.</h1>
-        <p className="text-xs font-mono uppercase tracking-widest text-gray-500 font-semibold">Join TutorMatch as a {role}</p>
+        <h1 className="text-3xl font-bold tracking-tight text-stone-900 mb-2">Create Account</h1>
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-600 bg-red-50 px-4 py-1.5 rounded-full border border-red-100/50">Join as a {role}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {error && (
-          <div className="bg-red-50/50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-xl">
-            {error}
-          </div>
-        )}
-
         {/* Role Toggle */}
-        <div className="flex bg-gray-100/80 p-1.5 rounded-2xl mb-4">
+        <div className="flex bg-stone-100/80 p-1.5 rounded-[20px] mb-8">
           <button
             type="button"
             onClick={() => setRole('student')}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-medium border-0 cursor-pointer transition-all duration-200 ${
+            className={`flex-1 py-3 rounded-2xl text-[11px] font-bold uppercase tracking-widest border-0 cursor-pointer transition-all duration-300 ${
               role === 'student'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'bg-transparent text-gray-500 hover:text-gray-900 hover:bg-white/50'
+                ? 'bg-white text-stone-900 shadow-lg shadow-stone-900/5'
+                : 'bg-transparent text-stone-400 hover:text-stone-900 hover:bg-white/40'
             }`}
           >
             Student
@@ -91,81 +85,82 @@ function RegisterForm() {
           <button
             type="button"
             onClick={() => setRole('tutor')}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-medium border-0 cursor-pointer transition-all duration-200 ${
+            className={`flex-1 py-3 rounded-2xl text-[11px] font-bold uppercase tracking-widest border-0 cursor-pointer transition-all duration-300 ${
               role === 'tutor'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'bg-transparent text-gray-500 hover:text-gray-900 hover:bg-white/50'
+                ? 'bg-white text-stone-900 shadow-lg shadow-stone-900/5'
+                : 'bg-transparent text-stone-400 hover:text-stone-900 hover:bg-white/40'
             }`}
           >
             Tutor
           </button>
         </div>
 
-        <div>
-          <label className="block text-xs font-mono uppercase tracking-widest text-gray-500 font-semibold mb-2">Email</label>
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 ml-1">Email Address</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all"
+            className="w-full px-5 py-4 bg-white/80 border border-stone-200 rounded-2xl text-sm outline-none focus:border-red-400 focus:ring-8 focus:ring-red-500/5 transition-all"
             placeholder="you@email.com"
           />
         </div>
 
-        <div>
-          <label className="block text-xs font-mono uppercase tracking-widest text-gray-500 font-semibold mb-2">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all"
-            placeholder="At least 6 characters"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 ml-1">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-5 py-4 bg-white/80 border border-stone-200 rounded-2xl text-sm outline-none focus:border-red-400 focus:ring-8 focus:ring-red-500/5 transition-all"
+              placeholder="••••••••"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 ml-1">Confirm</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="w-full px-5 py-4 bg-white/80 border border-stone-200 rounded-2xl text-sm outline-none focus:border-red-400 focus:ring-8 focus:ring-red-500/5 transition-all"
+              placeholder="••••••••"
+            />
+          </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-mono uppercase tracking-widest text-gray-500 font-semibold mb-2">Confirm Password</label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            className="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all"
-            placeholder="Repeat password"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-mono uppercase tracking-widest text-gray-500 font-semibold mb-2">Zip Code</label>
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 ml-1">ZIP Code</label>
           <input
             type="text"
             value={zipCode}
             onChange={(e) => setZipCode(e.target.value)}
             required
-            pattern="[0-9]*"
-            inputMode="numeric"
-            className="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all"
-            placeholder="5-digit zip code"
+            className="w-full px-5 py-4 bg-white/80 border border-stone-200 rounded-2xl text-sm outline-none focus:border-red-400 focus:ring-8 focus:ring-red-500/5 transition-all"
+            placeholder="12345"
           />
         </div>
+
+        {error && <div className="text-red-600 text-[11px] font-bold bg-red-50 p-4 rounded-2xl border border-red-100 animate-in fade-in slide-in-from-top-2 uppercase tracking-tighter">{error}</div>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-semibold text-sm hover:bg-orange-600 border-0 cursor-pointer disabled:opacity-50 transition-colors mt-2"
+          className="w-full bg-stone-900 text-white py-5 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-red-600 border-0 cursor-pointer disabled:opacity-50 transition-all shadow-xl shadow-stone-900/10 active:scale-95"
         >
-          {loading ? 'Creating account...' : 'Create Account'}
+          {loading ? 'Creating Account...' : 'Continue to Dashboard'}
         </button>
-      </form>
 
-      <p className="text-center text-sm text-gray-500 mt-8">
-        Already have an account?{' '}
-        <Link href={`/login?role=${role}`} className="text-orange-600 no-underline font-medium hover:text-gray-900 transition-colors">
-          Sign In
-        </Link>
-      </p>
+        <p className="text-center text-stone-400 text-[11px] mt-8 font-bold uppercase tracking-widest">
+          Already have an account?{' '}
+          <Link href={`/login?role=${role}`} className="text-red-600 no-underline font-bold hover:text-stone-900 transition-colors ml-1">
+            Sign In
+          </Link>
+        </p>
+      </form>
     </div>
   );
 }
@@ -174,8 +169,8 @@ export default function RegisterPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen mesh-bg flex flex-col justify-center py-20 px-4">
-        <Suspense fallback={<div className="text-center py-20 text-gray-400 font-mono text-sm">Loading...</div>}>
+      <main className="min-h-screen mesh-bg flex flex-col justify-center py-24 px-4">
+        <Suspense fallback={<div className="text-center py-20 text-stone-400 font-bold text-[10px] uppercase tracking-[0.3em]">Loading Secure Interface...</div>}>
           <RegisterForm />
         </Suspense>
       </main>

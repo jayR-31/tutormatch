@@ -5,114 +5,94 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen mesh-bg overflow-hidden relative">
+      <main className="min-h-screen mesh-bg overflow-hidden relative selection:bg-red-100 selection:text-red-900">
         {/* Subtle decorative elements */}
-        <div className="absolute top-20 right-[-100px] w-96 h-96 bg-orange-100 rounded-full blur-3xl opacity-50 pointer-events-none" />
-        <div className="absolute bottom-40 left-[-100px] w-96 h-96 bg-orange-50 rounded-full blur-3xl opacity-60 pointer-events-none" />
+        {/* Premium Background Accents */}
+        <div className="absolute top-[10%] right-[-5%] w-[45%] h-[45%] bg-red-600/5 rounded-full blur-[120px] animate-pulse pointer-events-none" />
+        <div className="absolute bottom-[5%] left-[-8%] w-[50%] h-[50%] bg-red-600/5 rounded-full blur-[120px] pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-6 py-24 sm:py-32 relative z-10">
+        <div className="max-w-7xl mx-auto px-6 pt-32 pb-24 sm:pt-48 relative z-10">
           
           {/* Hero Content */}
-          <div className="text-center max-w-3xl mx-auto mb-20">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/60 border border-orange-100 text-orange-800 text-xs font-medium tracking-wide mb-8 glass-panel">
-              <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
-              The modern way to learn
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-32">
+            <div className="text-left max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 border border-red-100 text-red-700 text-[10px] font-bold tracking-[0.2em] uppercase mb-10 shadow-sm shadow-red-900/5">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                The Next Generation of Learning
+              </div>
+              <h1 className="text-6xl sm:text-8xl font-bold text-stone-900 mb-8 tracking-tight leading-[0.95] text-balance">
+                Master any <br />
+                <span className="text-red-600 italic">subject.</span>
+              </h1>
+              <p className="text-xl text-stone-500 max-w-lg font-light leading-relaxed mb-12 text-balance">
+                Forge meaningful connections with world-class tutors. A bespoke marketplace designed for precision learning and academic excellence.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link
+                  href="/register?role=student"
+                  className="inline-flex justify-center items-center bg-red-600 text-white px-8 py-4 rounded-2xl text-base font-bold hover:bg-stone-900 hover:-translate-y-1 transition-all duration-300 shadow-xl shadow-red-600/20 active:scale-95"
+                >
+                  Start Learning Now
+                </Link>
+                <Link
+                  href="/register?role=tutor"
+                  className="inline-flex justify-center items-center bg-white border border-stone-200 text-stone-900 px-8 py-4 rounded-2xl text-base font-bold hover:border-red-200 hover:bg-red-50/30 transition-all duration-300 active:scale-95"
+                >
+                  Join as a Tutor
+                </Link>
+              </div>
             </div>
-            <h1 className="text-5xl sm:text-7xl font-bold text-gray-900 mb-6 tracking-tight leading-[1.1]">
-              Find the right tutor, <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-orange-400">right away.</span>
-            </h1>
-            <p className="text-lg sm:text-xl text-gray-500 max-w-2xl mx-auto font-light leading-relaxed">
-              Connect with highly qualified tutors tailored exactly to your subject, grade level, and location. No complicated matching—just results.
-            </p>
+
+            <div className="relative group lg:block hidden">
+              <div className="absolute inset-0 bg-red-600/10 rounded-[40px] blur-2xl group-hover:bg-red-600/15 transition-all duration-700" />
+              <div className="relative rounded-[40px] overflow-hidden border border-white/50 shadow-2xl glass-panel aspect-[4/5]">
+                <img 
+                  src="/Users/jayrungta/.gemini/antigravity/brain/9e8e5fed-bc69-4991-8db6-929a6234f0c8/hero_red_cream_abstract_1774317470467.png" 
+                  alt="TutorMatch Red and Cream Abstract Hero" 
+                  className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Bento Box Layout for Onboarding */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-5xl mx-auto">
-            
-            {/* Student Block - Spans 7 columns on Desktop */}
-            <div className="lg:col-span-7 bg-white/70 glass-panel rounded-3xl p-8 sm:p-10 bento-hover relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-8 opacity-10 font-mono text-9xl font-bold tracking-tighter text-orange-900 group-hover:scale-110 transition-transform duration-700 ease-out pointer-events-none">
-                S
+          {/* Value Propositions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="space-y-6">
+              <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 font-bold text-xl border border-red-100 shadow-sm">
+                01
               </div>
-              <div className="relative z-10">
-                <span className="text-sm font-mono tracking-widest text-orange-600 uppercase mb-4 block font-semibold">For Students</span>
-                <h3 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">Accelerate your learning.</h3>
-                <p className="text-gray-600 mb-8 max-w-sm">
-                  Search by zip code and subject. Instantly message tutors who fit your exact academic needs.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link
-                    href="/register?role=student"
-                    className="inline-flex justify-center items-center bg-gray-900 text-white px-6 py-3.5 rounded-xl text-sm font-medium hover:bg-orange-600 transition-colors duration-200"
-                  >
-                    Create Student Account
-                  </Link>
-                  <Link
-                    href="/login?role=student"
-                    className="inline-flex justify-center items-center bg-white border border-gray-200 text-gray-900 px-6 py-3.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    Sign In
-                  </Link>
-                </div>
-              </div>
+              <h3 className="text-xl font-bold text-stone-900 mb-4 tracking-tight text-balance">Curated Profiles</h3>
+              <p className="text-sm text-stone-500 font-medium leading-relaxed">Discover elite tutors vetted for academic excellence and pedagogical mastery.</p>
             </div>
 
-            {/* Tutor Block - Spans 5 columns on Desktop */}
-            <div className="lg:col-span-5 bg-orange-600 rounded-3xl p-8 sm:p-10 bento-hover text-white relative overflow-hidden group">
-              <div className="absolute -bottom-10 -right-10 p-8 opacity-10 font-mono text-9xl font-bold tracking-tighter text-white group-hover:-translate-y-4 group-hover:-translate-x-4 transition-transform duration-700 ease-out pointer-events-none">
-                T
+            <div className="space-y-6">
+              <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 font-bold text-xl border border-red-100 shadow-sm">
+                02
               </div>
-              <div className="relative z-10">
-                <span className="text-sm font-mono tracking-widest text-orange-200 uppercase mb-4 block font-semibold">For Tutors</span>
-                <h3 className="text-3xl font-bold text-white mb-4 tracking-tight">Share your expertise.</h3>
-                <p className="text-orange-100 mb-8 font-light text-sm">
-                  List your skills. Let motivated students find you locally or online.
-                </p>
-                <div className="flex flex-col gap-3">
-                  <Link
-                    href="/register?role=tutor"
-                    className="inline-flex justify-center items-center bg-white text-orange-600 px-6 py-3.5 rounded-xl text-sm font-semibold hover:bg-orange-50 transition-colors duration-200"
-                  >
-                    Join as Tutor
-                  </Link>
-                  <Link
-                    href="/login?role=tutor"
-                    className="inline-flex justify-center items-center bg-transparent border border-orange-400 text-white px-6 py-3.5 rounded-xl text-sm font-medium hover:bg-orange-500 transition-colors duration-200"
-                  >
-                    Tutor Login
-                  </Link>
-                </div>
-              </div>
+              <h3 className="text-xl font-bold text-stone-900 mb-4 tracking-tight text-balance">Smart Scheduling</h3>
+              <p className="text-sm text-stone-500 font-medium leading-relaxed">Integrated session management that respects your time and learning pace.</p>
             </div>
 
-            {/* How It Works - Small Horizontal Blocks */}
-            <div className="lg:col-span-4 bg-white/50 glass-panel rounded-3xl p-8 bento-hover">
-              <div className="text-orange-600 font-mono font-bold text-xl mb-3">01 // Profile</div>
-              <h4 className="font-semibold text-gray-900 mb-2">Create & Customize</h4>
-              <p className="text-sm text-gray-500">Sign up in seconds. Tell us what you need to learn or are qualified to teach.</p>
-            </div>
-            
-            <div className="lg:col-span-4 bg-white/50 glass-panel rounded-3xl p-8 bento-hover">
-              <div className="text-orange-600 font-mono font-bold text-xl mb-3">02 // Discover</div>
-              <h4 className="font-semibold text-gray-900 mb-2">Smart Filtering</h4>
-              <p className="text-sm text-gray-500">Filter instantly by distance, grade level, format, and subject matter.</p>
-            </div>
-
-            <div className="lg:col-span-4 bg-white/50 glass-panel rounded-3xl p-8 bento-hover">
-              <div className="text-orange-600 font-mono font-bold text-xl mb-3">03 // Connect</div>
-              <h4 className="font-semibold text-gray-900 mb-2">Direct Messaging</h4>
-              <p className="text-sm text-gray-500">Reach out through our seamless platform to organize your very first session.</p>
+            <div className="space-y-6">
+              <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 font-bold text-xl border border-red-100 shadow-sm">
+                03
+              </div>
+              <h3 className="text-xl font-bold text-stone-900 mb-4 tracking-tight text-balance">Direct Connect</h3>
+              <p className="text-sm text-stone-500 font-medium leading-relaxed">Secure, direct messaging to facilitate deep academic inquiry and coordination.</p>
             </div>
           </div>
         </div>
-        
+
         {/* Footer */}
-        <footer className="py-12 px-6 text-center text-sm text-gray-400 border-t border-gray-200/50 mt-10">
-          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="font-medium">TutorMatch</p>
-            <p>© 2026 Crafted with intent.</p>
+        <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-stone-100 flex flex-col sm:flex-row justify-between items-center gap-8">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-stone-900 flex items-center justify-center text-white text-[10px] font-bold shadow-lg shadow-stone-900/10">
+              TM
+            </div>
+            <p className="font-bold text-stone-900 tracking-tight m-0">TutorMatch</p>
           </div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">© 2026 TutorMatch. Elevated Learning.</p>
         </footer>
       </main>
     </>

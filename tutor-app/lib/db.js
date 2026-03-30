@@ -64,12 +64,23 @@ function initializeDb(db) {
 
     CREATE TABLE IF NOT EXISTS conversations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      student_id INTEGER NOT NULL,
-      tutor_id INTEGER NOT NULL,
+      student_id INTEGER, -- Kept for backward compatibility, nullable for group chats
+      tutor_id INTEGER,   -- Kept for backward compatibility, nullable for group chats
+      is_group INTEGER DEFAULT 0,
+      name TEXT,
       last_message_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (student_id) REFERENCES users(id),
-      FOREIGN KEY (tutor_id) REFERENCES users(id),
-      UNIQUE(student_id, tutor_id)
+      FOREIGN KEY (tutor_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS conversation_participants (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      conversation_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (conversation_id) REFERENCES conversations(id),
+      FOREIGN KEY (user_id) REFERENCES users(id),
+      UNIQUE(conversation_id, user_id)
     );
 
     CREATE TABLE IF NOT EXISTS messages (
@@ -89,12 +100,14 @@ function initializeDb(db) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       conversation_id INTEGER NOT NULL,
       sender_id INTEGER NOT NULL,
-      receiver_id INTEGER NOT NULL,
+      receiver_id INTEGER, -- Nullable for group sessions
+      is_group INTEGER DEFAULT 0,
       date TEXT NOT NULL,
       time TEXT NOT NULL,
       duration_minutes INTEGER NOT NULL,
       format TEXT DEFAULT 'online',
       status TEXT DEFAULT 'pending',
+      subjects TEXT DEFAULT '[]',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (conversation_id) REFERENCES conversations(id),
       FOREIGN KEY (sender_id) REFERENCES users(id),
@@ -124,12 +137,99 @@ function initializeDb(db) {
       }
     }
 
+    // Check conversations table for group columns and constraints
+    const convColumns = db.pragma('table_info(conversations)');
+    if (convColumns.length > 0) {
+      if (!convColumns.some(col => col.name === 'is_group')) {
+        db.exec("ALTER TABLE conversations ADD COLUMN is_group INTEGER DEFAULT 0");
+      }
+      if (!convColumns.some(col => col.name === 'name')) {
+        db.exec("ALTER TABLE conversations ADD COLUMN name TEXT");
+      }
+      
+      // If student_id is NOT NULL, we need to migrate the table to make it nullable
+      const studentIdCol = convColumns.find(col => col.name === 'student_id');
+      if (studentIdCol && studentIdCol.notnull === 1) {
+        console.log("Migrating conversations table to allow nullable student_id/tutor_id...");
+        db.exec("PRAGMA foreign_keys = OFF");
+        db.exec(`
+          CREATE TABLE conversations_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id INTEGER,
+            tutor_id INTEGER,
+            is_group INTEGER DEFAULT 0,
+            name TEXT,
+            last_message_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_id) REFERENCES users(id),
+            FOREIGN KEY (tutor_id) REFERENCES users(id)
+          );
+          INSERT INTO conversations_new (id, student_id, tutor_id, is_group, name, last_message_at)
+          SELECT id, student_id, tutor_id, is_group, name, last_message_at FROM conversations;
+          DROP TABLE conversations;
+          ALTER TABLE conversations_new RENAME TO conversations;
+        `);
+        db.exec("PRAGMA foreign_keys = ON");
+      }
+    }
+
     // Check sessions table for format column
     const sessionColumns = db.pragma('table_info(sessions)');
     if (sessionColumns.length > 0) {
       if (!sessionColumns.some(col => col.name === 'format')) {
         db.exec("ALTER TABLE sessions ADD COLUMN format TEXT DEFAULT 'online'");
       }
+      if (!sessionColumns.some(col => col.name === 'subjects')) {
+        db.exec("ALTER TABLE sessions ADD COLUMN subjects TEXT DEFAULT '[]'");
+      }
+      if (!sessionColumns.some(col => col.name === 'is_group')) {
+        db.exec("ALTER TABLE sessions ADD COLUMN is_group INTEGER DEFAULT 0");
+      }
+
+      // If receiver_id is NOT NULL, we need to migrate the table to make it nullable
+      const receiverIdCol = sessionColumns.find(col => col.name === 'receiver_id');
+      if (receiverIdCol && receiverIdCol.notnull === 1) {
+        console.log("Migrating sessions table to allow nullable receiver_id...");
+        db.exec("PRAGMA foreign_keys = OFF");
+        db.exec(`
+          CREATE TABLE sessions_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            conversation_id INTEGER NOT NULL,
+            sender_id INTEGER NOT NULL,
+            receiver_id INTEGER,
+            is_group INTEGER DEFAULT 0,
+            date TEXT NOT NULL,
+            time TEXT NOT NULL,
+            duration_minutes INTEGER NOT NULL,
+            format TEXT DEFAULT 'online',
+            status TEXT DEFAULT 'pending',
+            subjects TEXT DEFAULT '[]',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (conversation_id) REFERENCES conversations(id),
+            FOREIGN KEY (sender_id) REFERENCES users(id),
+            FOREIGN KEY (receiver_id) REFERENCES users(id)
+          );
+          INSERT INTO sessions_new (id, conversation_id, sender_id, receiver_id, is_group, date, time, duration_minutes, format, status, subjects, created_at)
+          SELECT id, conversation_id, sender_id, receiver_id, is_group, date, time, duration_minutes, format, status, subjects, created_at FROM sessions;
+          DROP TABLE sessions;
+          ALTER TABLE sessions_new RENAME TO sessions;
+        `);
+        db.exec("PRAGMA foreign_keys = ON");
+      }
+    }
+
+    // Migration: Populate conversation_participants for existing 1-to-1 conversations
+    const existingPats = db.prepare('SELECT COUNT(*) as count FROM conversation_participants').get();
+    if (existingPats.count === 0) {
+      const conversations = db.prepare('SELECT id, student_id, tutor_id FROM conversations').all();
+      const insertParticipant = db.prepare('INSERT INTO conversation_participants (conversation_id, user_id) VALUES (?, ?)');
+      
+      const transaction = db.transaction((convs) => {
+        for (const conv of convs) {
+          if (conv.student_id) insertParticipant.run(conv.id, conv.student_id);
+          if (conv.tutor_id) insertParticipant.run(conv.id, conv.tutor_id);
+        }
+      });
+      transaction(conversations);
     }
   } catch (e) {
     console.error("Migration error:", e);

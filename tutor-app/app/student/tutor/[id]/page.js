@@ -12,6 +12,7 @@ export default function TutorProfilePage({ params }) {
   const [loading, setLoading] = useState(true);
   const [messageText, setMessageText] = useState('');
   const [messageSent, setMessageSent] = useState(false);
+  const [error, setError] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
 
   useEffect(() => {
@@ -31,6 +32,7 @@ export default function TutorProfilePage({ params }) {
   const sendMessage = async () => {
     if (!messageText.trim() || !user) return;
     setSendingMessage(true);
+    setError('');
     try {
       const res = await fetch('/api/messages', {
         method: 'POST',
@@ -40,8 +42,13 @@ export default function TutorProfilePage({ params }) {
       if (res.ok) {
         setMessageSent(true);
         setMessageText('');
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to send message');
       }
-    } catch {}
+    } catch {
+      setError('Something went wrong. Please try again.');
+    }
     setSendingMessage(false);
   };
 
@@ -55,7 +62,7 @@ export default function TutorProfilePage({ params }) {
     return (
       <>
         <Navbar />
-        <div className="text-center py-20 text-gray-400">Loading...</div>
+        <div className="text-center py-20 text-stone-400 font-bold text-[10px] uppercase tracking-[0.3em]">Decoding Profile...</div>
       </>
     );
   }
@@ -64,10 +71,13 @@ export default function TutorProfilePage({ params }) {
     return (
       <>
         <Navbar />
-        <div className="text-center py-20">
-          <p className="text-gray-500">Tutor not found.</p>
-          <button onClick={() => router.back()} className="text-orange-600 mt-2 bg-transparent border-0 cursor-pointer text-sm">
-            ← Go back
+        <div className="text-center py-24">
+          <p className="text-stone-500 font-bold text-xs uppercase tracking-widest mb-6">Expertise Profile Not Found</p>
+          <button 
+            onClick={() => router.back()} 
+            className="text-red-600 bg-red-50 px-6 py-2.5 rounded-full font-bold text-[10px] uppercase tracking-widest border border-red-100 hover:bg-stone-900 hover:text-white transition-all duration-300 cursor-pointer shadow-lg shadow-red-900/5"
+          >
+            ← Return to Discovery
           </button>
         </div>
       </>
@@ -77,106 +87,146 @@ export default function TutorProfilePage({ params }) {
   return (
     <>
       <Navbar />
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <button onClick={() => router.back()} className="text-sm text-gray-500 hover:text-orange-600 bg-transparent border-0 cursor-pointer mb-6">
-          ← Back to search
-        </button>
+      <main className="min-h-screen mesh-bg py-24 px-4">
+        <div className="max-w-4xl mx-auto">
+          <button 
+            onClick={() => router.back()} 
+            className="group flex items-center gap-2 text-[10px] font-bold text-stone-400 hover:text-red-600 bg-transparent border-0 cursor-pointer mb-12 transition-colors uppercase tracking-[0.2em]"
+          >
+            <span className="group-hover:-translate-x-1 transition-transform">←</span> Return to Discovery
+          </button>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8">
-          {/* Header */}
-          <div className="flex items-start gap-5 mb-6">
-            <div className="w-20 h-20 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-2xl flex-shrink-0">
-              {tutor.name?.charAt(0)?.toUpperCase() || 'T'}
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900 m-0">{tutor.name}</h1>
-              <p className="text-sm text-gray-500 mt-1 m-0">{formatLabel[tutor.format_type] || tutor.format_type}</p>
-              {tutor.zip_code && (
-                <p className="text-sm text-gray-400 mt-1 m-0 flex items-center gap-1">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                    <circle cx="12" cy="10" r="3"></circle>
-                  </svg>
-                  ZIP: {tutor.zip_code}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Bio */}
-          {tutor.bio && (
-            <div className="mb-6">
-              <h2 className="text-sm font-semibold text-gray-700 mb-2">About</h2>
-              <p className="text-sm text-gray-600 leading-relaxed">{tutor.bio}</p>
-            </div>
-          )}
-
-          {/* Subjects */}
-          {tutor.subjects?.length > 0 && (
-            <div className="mb-6">
-              <h2 className="text-sm font-semibold text-gray-700 mb-2">Subjects</h2>
-              <div className="flex flex-wrap gap-2">
-                {tutor.subjects.map((s, i) => (
-                  <span key={i} className="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-sm font-medium">{s}</span>
-                ))}
+          <div className="bg-white/60 glass-panel rounded-[40px] p-8 sm:p-16 shadow-2xl shadow-red-900/5 bento-hover">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-10 mb-16 border-b border-stone-100 pb-16">
+              <div className="w-32 h-32 rounded-[36px] bg-red-600 flex items-center justify-center text-white font-bold text-4xl shadow-2xl shadow-red-600/20 transform hover:scale-105 transition-transform duration-500 ring-8 ring-red-50">
+                {tutor.name?.charAt(0)?.toUpperCase() || 'T'}
+              </div>
+              <div className="text-center md:text-left pt-2">
+                <div className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-red-100/50 mb-4">
+                  Verified Educator
+                </div>
+                <h1 className="text-4xl font-bold tracking-tight text-stone-900 mb-2">{tutor.name}</h1>
+                <div className="flex flex-wrap justify-center md:justify-start gap-6 text-stone-400 font-bold text-[11px] uppercase tracking-widest mt-4">
+                  <span className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                    {formatLabel[tutor.format_type] || tutor.format_type}
+                  </span>
+                  {tutor.zip_code && (
+                    <span className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-stone-300 rounded-full" />
+                      Location: {tutor.zip_code}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-          )}
 
-          {/* Grade Levels */}
-          {tutor.grade_levels?.length > 0 && (
-            <div className="mb-6">
-              <h2 className="text-sm font-semibold text-gray-700 mb-2">Grade Levels</h2>
-              <p className="text-sm text-gray-600">{tutor.grade_levels.join(', ')}</p>
-            </div>
-          )}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+              <div className="lg:col-span-12 space-y-12">
+                {/* Bio */}
+                {tutor.bio && (
+                  <div className="space-y-4">
+                    <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-stone-400 ml-1">Professional Introduction</h2>
+                    <p className="text-lg text-stone-600 leading-relaxed font-medium">{tutor.bio}</p>
+                  </div>
+                )}
 
-          {/* Skills */}
-          {tutor.skills && (
-            <div className="mb-6">
-              <h2 className="text-sm font-semibold text-gray-700 mb-2">Skills & Expertise</h2>
-              <p className="text-sm text-gray-600">{tutor.skills}</p>
-            </div>
-          )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                  {/* Subjects */}
+                  {tutor.subjects?.length > 0 && (
+                    <div className="space-y-4">
+                      <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-stone-400 ml-1">Subject Expertise</h2>
+                      <div className="flex flex-wrap gap-2.5">
+                        {tutor.subjects.map((s, i) => (
+                          <span key={i} className="bg-stone-900 text-white px-5 py-2 rounded-2xl text-[11px] font-bold uppercase tracking-widest shadow-lg shadow-stone-900/10 hover:bg-red-600 transition-colors cursor-default">{s}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-          {/* Message Section */}
-          {user && user.role === 'student' && (
-            <div className="border-t border-gray-200 pt-6 mt-6">
-              <h2 className="text-sm font-semibold text-gray-700 mb-3">Send a Message</h2>
-              {messageSent ? (
-                <div className="bg-green-50 text-green-600 text-sm px-4 py-3 rounded-lg">
-                  Message sent! Check your Messages tab to continue the conversation.
+                  {/* Details Grid */}
+                  <div className="space-y-12">
+                    {/* Grade Levels */}
+                    {tutor.grade_levels?.length > 0 && (
+                      <div className="space-y-3">
+                        <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-stone-400 ml-1">Grade Levels</h2>
+                        <div className="flex flex-wrap gap-2 text-stone-600 text-sm font-bold uppercase tracking-wider">
+                          {tutor.grade_levels.map((g, i) => (
+                            <span key={i} className="bg-stone-100/80 px-4 py-1.5 rounded-full">{g}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Skills */}
+                    {tutor.skills && (
+                      <div className="space-y-3">
+                        <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-stone-400 ml-1">Specialized Skills</h2>
+                        <p className="text-stone-600 text-sm font-bold uppercase tracking-widest leading-loose">{tutor.skills}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ) : (
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    placeholder="Hi, I'd like to learn more about your tutoring..."
-                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-orange-400"
-                  />
-                  <button
-                    onClick={sendMessage}
-                    disabled={sendingMessage || !messageText.trim()}
-                    className="bg-orange-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-orange-600 border-0 cursor-pointer disabled:opacity-50"
-                  >
-                    {sendingMessage ? 'Sending...' : 'Send'}
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
 
-          {!user && (
-            <div className="border-t border-gray-200 pt-6 mt-6 text-center">
-              <p className="text-sm text-gray-500">
-                <a href="/login?role=student" className="text-orange-600 no-underline font-medium">Sign in</a> to message this tutor.
-              </p>
+                {/* Message Section */}
+                {user && user.role === 'student' && (
+                  <div className="mt-16 bg-stone-50/50 rounded-[32px] p-8 sm:p-12 border border-stone-100">
+                    <div className="flex items-center justify-between mb-8">
+                      <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-stone-400 ml-1">Direct Secure Connection</h2>
+                    </div>
+                    {error && (
+                      <div className="bg-red-50 text-red-600 text-[10px] font-bold px-6 py-4 rounded-2xl border border-red-100 mb-6 uppercase tracking-widest animate-in fade-in slide-in-from-top-2">{error}</div>
+                    )}
+                    {messageSent ? (
+                      <div className="bg-stone-900 text-white text-xs font-bold px-8 py-6 rounded-2xl shadow-xl shadow-stone-900/20 animate-in zoom-in-95 duration-500">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-lg">✓</div>
+                          <div>
+                            <p className="uppercase tracking-[0.2em] mb-1">Inquiry Transmitted Successfully</p>
+                            <p className="opacity-60 font-medium">Continue this dialogue in your messaging interface.</p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <input
+                          type="text"
+                          value={messageText}
+                          onChange={(e) => setMessageText(e.target.value)}
+                          placeholder="Begin your inquiry here..."
+                          className="flex-1 px-8 py-5 bg-white border border-stone-200 rounded-[24px] text-sm font-medium outline-none focus:border-red-400 focus:ring-8 focus:ring-red-500/5 transition-all shadow-sm"
+                        />
+                        <button
+                          onClick={sendMessage}
+                          disabled={sendingMessage || !messageText.trim()}
+                          className="bg-stone-900 text-white px-10 py-5 rounded-[24px] font-bold text-sm uppercase tracking-widest hover:bg-red-600 border-0 cursor-pointer disabled:opacity-50 transition-all shadow-xl shadow-stone-900/10 active:scale-95"
+                        >
+                          {sendingMessage ? 'Transmitting...' : 'Send Message'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {!user && (
+                  <div className="mt-16 border-t border-stone-100 pt-16 text-center">
+                    <p className="text-[11px] font-bold text-stone-400 uppercase tracking-[0.3em]">
+                      Authenticating Required to Initiate Connection
+                    </p>
+                    <a 
+                      href="/login?role=student" 
+                      className="inline-block mt-6 text-red-600 no-underline font-bold text-xs uppercase tracking-widest hover:text-stone-900 transition-colors border-b-2 border-red-100 hover:border-stone-900 pb-1"
+                    >
+                      Authenticate Account
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      </main>
     </>
   );
 }

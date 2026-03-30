@@ -11,13 +11,15 @@ export async function GET(request, { params }) {
     const db = getDb();
 
     // Verify user is part of conversation
-    const conversation = db.prepare(
-      'SELECT * FROM conversations WHERE id = ? AND (student_id = ? OR tutor_id = ?)'
-    ).get(conversationId, user.id, user.id);
+    const participant = db.prepare(
+      'SELECT id FROM conversation_participants WHERE conversation_id = ? AND user_id = ?'
+    ).get(conversationId, user.id);
 
-    if (!conversation) {
-      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+    if (!participant) {
+      return NextResponse.json({ error: 'Conversation not found or access denied' }, { status: 404 });
     }
+
+    const conversation = db.prepare('SELECT * FROM conversations WHERE id = ?').get(conversationId);
 
     // Mark messages as read
     db.prepare(
@@ -34,7 +36,8 @@ export async function GET(request, { params }) {
         s.time as session_time,
         s.duration_minutes as session_duration,
         s.format as session_format,
-        s.status as session_status
+        s.status as session_status,
+        s.subjects as session_subjects
       FROM messages m
       LEFT JOIN student_profiles sp ON m.sender_id = sp.user_id
       LEFT JOIN tutor_profiles tp ON m.sender_id = tp.user_id
@@ -43,16 +46,25 @@ export async function GET(request, { params }) {
       ORDER BY m.created_at ASC
     `).all(conversationId);
 
-    // Get other person's info
-    const otherId = conversation.student_id === user.id ? conversation.tutor_id : conversation.student_id;
-    const otherUser = db.prepare('SELECT role FROM users WHERE id = ?').get(otherId);
+    // Get other participants' info
     let otherName = 'Unknown';
-    if (otherUser?.role === 'tutor') {
-      const tp = db.prepare('SELECT name FROM tutor_profiles WHERE user_id = ?').get(otherId);
-      otherName = tp?.name || 'Unknown';
+    let otherId = null;
+
+    if (conversation.is_group) {
+      otherName = conversation.name || 'Group Chat';
     } else {
-      const sp = db.prepare('SELECT name FROM student_profiles WHERE user_id = ?').get(otherId);
-      otherName = sp?.name || 'Unknown';
+      const otherPart = db.prepare('SELECT user_id FROM conversation_participants WHERE conversation_id = ? AND user_id != ?').get(conversationId, user.id);
+      if (otherPart) {
+        otherId = otherPart.user_id;
+        const otherUser = db.prepare('SELECT role FROM users WHERE id = ?').get(otherId);
+        if (otherUser?.role === 'tutor') {
+          const tp = db.prepare('SELECT name FROM tutor_profiles WHERE user_id = ?').get(otherId);
+          otherName = tp?.name || 'Unknown';
+        } else {
+          const sp = db.prepare('SELECT name FROM student_profiles WHERE user_id = ?').get(otherId);
+          otherName = sp?.name || 'Unknown';
+        }
+      }
     }
 
     return NextResponse.json({

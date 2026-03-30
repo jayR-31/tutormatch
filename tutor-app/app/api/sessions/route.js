@@ -10,30 +10,39 @@ export async function GET() {
     const db = getDb();
 
     // Get all accepted upcoming sessions for the user
-    // Join with student/tutor profiles to get the OTHER person's name
     const sessions = db.prepare(`
       SELECT s.*, 
-        CASE WHEN s.sender_id = ? THEN receiver_tp.name ELSE sender_tp.name END as tutor_name,
-        CASE WHEN s.sender_id = ? THEN receiver_sp.name ELSE sender_sp.name END as student_name
+        c.name as group_name,
+        CASE WHEN s.is_group = 1 THEN c.name 
+             WHEN s.sender_id = ? THEN receiver_tp.name ELSE sender_tp.name END as tutor_name,
+        CASE WHEN s.is_group = 1 THEN 'Group'
+             WHEN s.sender_id = ? THEN receiver_sp.name ELSE sender_sp.name END as student_name
       FROM sessions s
+      JOIN conversations c ON s.conversation_id = c.id
+      JOIN conversation_participants cp ON c.id = cp.conversation_id
       LEFT JOIN tutor_profiles sender_tp ON s.sender_id = sender_tp.user_id
       LEFT JOIN tutor_profiles receiver_tp ON s.receiver_id = receiver_tp.user_id
       LEFT JOIN student_profiles sender_sp ON s.sender_id = sender_sp.user_id
       LEFT JOIN student_profiles receiver_sp ON s.receiver_id = receiver_sp.user_id
-      WHERE (s.sender_id = ? OR s.receiver_id = ?) 
+      WHERE cp.user_id = ? 
         AND s.status = 'accepted'
       ORDER BY s.date ASC, s.time ASC
-    `).all(user.id, user.id, user.id, user.id);
+    `).all(user.id, user.id, user.id);
 
     // Format the names correctly based on role
     const formattedSessions = sessions.map(s => {
-      const otherUserIsReceiver = s.sender_id === user.id;
-      const otherId = otherUserIsReceiver ? s.receiver_id : s.sender_id;
-      // If I am a student, the other person is a tutor, so their name is in tutor_name
-      // If I am a tutor, the other person is a student, so their name is in student_name
+      let other_name;
+      if (s.is_group) {
+        other_name = s.group_name || 'Group Session';
+      } else {
+        other_name = user.role === 'student' ? s.tutor_name : s.student_name;
+      }
+      
+      const otherId = s.sender_id === user.id ? s.receiver_id : s.sender_id;
+
       return {
         ...s,
-        other_name: user.role === 'student' ? s.tutor_name : s.student_name,
+        other_name,
         other_id: otherId
       };
     });
@@ -50,52 +59,53 @@ export async function POST(request) {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { receiverId, date, time, duration_minutes, format } = await request.json();
+    const { receiverId, conversationId: reqConvId, date, time, duration_minutes, format, subjects, isGroup } = await request.json();
 
-    if (!receiverId || !date || !time || !duration_minutes || !format) {
+    if ((!receiverId && !reqConvId) || !date || !time || !duration_minutes || !format) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     const db = getDb();
 
     // Get conversation id
-    let studentId, tutorId;
-    if (user.role === 'student') {
-      studentId = user.id;
-      tutorId = receiverId;
-    } else {
-      studentId = receiverId;
-      tutorId = user.id;
-    }
+    let conversationId = reqConvId;
+    if (!conversationId) {
+      // Find or create 1-to-1 conversation
+      const existing = db.prepare(`
+        SELECT conversation_id FROM conversation_participants cp1
+        JOIN conversation_participants cp2 ON cp1.conversation_id = cp2.conversation_id
+        JOIN conversations c ON cp1.conversation_id = c.id
+        WHERE c.is_group = 0 AND cp1.user_id = ? AND cp2.user_id = ?
+      `).get(user.id, receiverId);
 
-    let conversation = db.prepare(
-      'SELECT id FROM conversations WHERE student_id = ? AND tutor_id = ?'
-    ).get(studentId, tutorId);
-
-    if (!conversation) {
-      const result = db.prepare(
-        'INSERT INTO conversations (student_id, tutor_id) VALUES (?, ?)'
-      ).run(studentId, tutorId);
-      conversation = { id: result.lastInsertRowid };
+      if (existing) {
+        conversationId = existing.conversation_id;
+      } else {
+        const result = db.prepare('INSERT INTO conversations (is_group) VALUES (0)').run();
+        conversationId = result.lastInsertRowid;
+        db.prepare('INSERT INTO conversation_participants (conversation_id, user_id) VALUES (?, ?)').run(conversationId, user.id);
+        db.prepare('INSERT INTO conversation_participants (conversation_id, user_id) VALUES (?, ?)').run(conversationId, receiverId);
+      }
     }
 
     // Insert session
     const sessionResult = db.prepare(`
-      INSERT INTO sessions (conversation_id, sender_id, receiver_id, date, time, duration_minutes, format) 
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(conversation.id, user.id, receiverId, date, time, duration_minutes, format);
+      INSERT INTO sessions (conversation_id, sender_id, receiver_id, is_group, date, time, duration_minutes, format, subjects) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(conversationId, user.id, isGroup ? null : receiverId, isGroup ? 1 : 0, date, time, duration_minutes, format, JSON.stringify(subjects || []));
 
     const sessionId = sessionResult.lastInsertRowid;
 
     // Insert message of type 'proposal'
-    const content = `Proposed a ${duration_minutes}-minute ${format} session on ${date} at ${time}.`;
+    const subjectsList = subjects && subjects.length > 0 ? ` for ${subjects.join(', ')}` : '';
+    const content = `Proposed a ${duration_minutes}-minute ${format} session on ${date} at ${time}${subjectsList}.`;
     db.prepare(`
       INSERT INTO messages (conversation_id, sender_id, content, type, reference_id) 
       VALUES (?, ?, ?, 'proposal', ?)
-    `).run(conversation.id, user.id, content, sessionId);
+    `).run(conversationId, user.id, content, sessionId);
 
     // Update conversation last message time
-    db.prepare('UPDATE conversations SET last_message_at = CURRENT_TIMESTAMP WHERE id = ?').run(conversation.id);
+    db.prepare('UPDATE conversations SET last_message_at = CURRENT_TIMESTAMP WHERE id = ?').run(conversationId);
 
     return NextResponse.json({ success: true, sessionId });
   } catch (error) {

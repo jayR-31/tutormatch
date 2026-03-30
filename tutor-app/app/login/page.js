@@ -43,17 +43,15 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white/60 glass-panel rounded-3xl p-8 sm:p-10 bento-hover">
+    <div className="w-full max-w-md mx-auto bg-white/60 glass-panel rounded-[32px] p-8 sm:p-12 bento-hover shadow-2xl shadow-red-900/5">
       <div className="text-center mb-10 flex flex-col items-center">
         <img 
           src="/logo-v2.png" 
           alt="Tutor Match Logo" 
-          className="h-28 sm:h-36 w-auto object-contain mb-8"
+          className="h-28 sm:h-32 w-auto object-contain mb-8 hover:scale-105 transition-transform duration-500"
         />
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">Welcome Back.</h1>
-        <p className="text-xs font-mono uppercase tracking-widest text-gray-500 font-semibold">
-          Sign in as {defaultRole}
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight text-stone-900 mb-2">Welcome Back</h1>
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-600 bg-red-50 px-4 py-1.5 rounded-full border border-red-100/50">Secure Access Interface</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -63,45 +61,47 @@ function LoginForm() {
           </div>
         )}
 
-        <div>
-          <label className="block text-xs font-mono uppercase tracking-widest text-gray-500 font-semibold mb-2">Email</label>
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 ml-1">Email Address</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all"
+            className="w-full px-5 py-4 bg-white/80 border border-stone-200 rounded-2xl text-sm outline-none focus:border-red-400 focus:ring-8 focus:ring-red-500/5 transition-all"
             placeholder="you@email.com"
           />
         </div>
 
-        <div>
-          <label className="block text-xs font-mono uppercase tracking-widest text-gray-500 font-semibold mb-2">Password</label>
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 ml-1">Password</label>
           <input
             type="password"
+            placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-5 py-4 bg-white/80 border border-stone-200 rounded-2xl text-sm outline-none focus:border-red-400 focus:ring-8 focus:ring-red-500/5 transition-all"
             required
-            className="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all"
-            placeholder="••••••••"
           />
         </div>
-
+        
+        {error && <div className="text-red-600 text-[11px] font-bold bg-red-50 p-4 rounded-2xl border border-red-100 animate-in fade-in slide-in-from-top-2 uppercase tracking-tighter">{error}</div>}
+        
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-semibold text-sm hover:bg-orange-600 border-0 cursor-pointer disabled:opacity-50 transition-colors mt-2"
+          className="w-full bg-stone-900 text-white py-5 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-red-600 border-0 cursor-pointer disabled:opacity-50 transition-all shadow-xl shadow-stone-900/10 active:scale-95"
         >
-          {loading ? 'Signing in...' : 'Sign In'}
+          {loading ? 'Entering...' : `Sign in as ${defaultRole}`}
         </button>
-      </form>
 
-      <p className="text-center text-sm text-gray-500 mt-8">
-        Don&apos;t have an account?{' '}
-        <Link href={`/register?role=${defaultRole}`} className="text-orange-600 no-underline font-medium hover:text-gray-900 transition-colors">
-          Sign Up
-        </Link>
-      </p>
+        <p className="text-center text-stone-400 text-[11px] mt-8 font-bold uppercase tracking-widest leading-loose">
+          Don't have an account?{' '}
+          <Link href={`/register?role=${defaultRole}`} className="text-red-600 no-underline font-bold hover:text-stone-900 transition-colors ml-1">
+            Create account
+          </Link>
+        </p>
+      </form>
     </div>
   );
 }
