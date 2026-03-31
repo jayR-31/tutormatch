@@ -48,7 +48,7 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-red-600/10 rounded-[40px] blur-2xl group-hover:bg-red-600/15 transition-all duration-700" />
               <div className="relative rounded-[40px] overflow-hidden border border-white/50 shadow-2xl glass-panel aspect-[4/5]">
                 <img 
-                  src="/Users/jayrungta/.gemini/antigravity/brain/9e8e5fed-bc69-4991-8db6-929a6234f0c8/hero_red_cream_abstract_1774317470467.png" 
+                  src="/hero_image.png" 
                   alt="TutorMatch Red and Cream Abstract Hero" 
                   className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
                 />
