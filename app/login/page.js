@@ -96,7 +96,7 @@ function LoginForm() {
         </button>
 
         <p className="text-center text-stone-400 text-[11px] mt-8 font-bold uppercase tracking-widest leading-loose">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link href={`/register?role=${defaultRole}`} className="text-red-600 no-underline font-bold hover:text-stone-900 transition-colors ml-1">
             Create account
           </Link>
