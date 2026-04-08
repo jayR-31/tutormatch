@@ -7,6 +7,10 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 20
+      - key: PORT
+        value: 10000
+    # NOTE: If you are on Render's Free Tier, delete the following 'disk' section.
+    # Persistent disks are only available on paid plans.
     disk:
       name: tutor-data
       mountPath: /opt/render/project/src/data
