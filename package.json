@@ -12,15 +12,20 @@
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.6.2",
     "jsonwebtoken": "^9.0.3",
-    "next": "15.0.0",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "zipcode-to-timezone": "^0.0.9"
   },
   "devDependencies": {
+    "@eslint/config-array": "^0.23.5",
+    "@eslint/eslintrc": "^3.3.5",
+    "@eslint/js": "^10.0.1",
+    "@eslint/object-schema": "^3.0.5",
     "@tailwindcss/postcss": "^4",
     "eslint": "^9",
-    "eslint-config-next": "15.0.0",
-    "tailwindcss": "^4"
+    "eslint-config-next": "^15.1.0",
+    "tailwindcss": "^4",
+    "typescript": "^6.0.2"
   }
 }
