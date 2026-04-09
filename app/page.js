@@ -86,12 +86,12 @@ export default function HomePage() {
 
         {/* Footer */}
         <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-stone-100 flex flex-col sm:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-stone-900 flex items-center justify-center text-white text-[10px] font-bold shadow-lg shadow-stone-900/10">
+          <Link href="/about" className="flex items-center gap-3 group">
+            <div className="w-8 h-8 rounded-lg bg-stone-900 group-hover:bg-red-600 flex items-center justify-center text-white text-[10px] font-bold shadow-lg shadow-stone-900/10 transition-all duration-300 group-hover:-translate-y-1">
               TM
             </div>
-            <p className="font-bold text-stone-900 tracking-tight m-0">TutorMatch</p>
-          </div>
+            <p className="font-bold text-stone-900 tracking-tight m-0 transition-colors group-hover:text-red-700">TutorMatch</p>
+          </Link>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">© 2026 TutorMatch. Elevated Learning.</p>
         </footer>
       </main>
