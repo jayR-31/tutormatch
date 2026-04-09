@@ -75,7 +75,7 @@ export default function AboutCreatorPage() {
             <div className="premium-card p-8">
               <h3 className="text-xl font-bold text-stone-900 mb-4 tracking-tight">The Mission</h3>
               <p className="text-stone-500 font-medium leading-relaxed">
-                My brother and I are dedicated to connecting tutors with students, streamlining the process to make everyone&apos;s job easier.
+                Viraj and Jay are dedicated to connecting tutors with students, streamlining the process to make everyone&apos;s job easier.
               </p>
             </div>
             <div className="premium-card p-8">
