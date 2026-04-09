@@ -30,24 +30,42 @@ export default function AboutCreatorPage() {
 
           <div className="relative mt-20 mb-20 group">
             <div className="absolute inset-0 bg-red-600/10 rounded-[40px] blur-2xl group-hover:bg-red-600/15 transition-all duration-700" />
-            <div className="relative glass-panel rounded-[40px] p-12 text-left border border-white/50 shadow-2xl">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                <div>
-                  <h2 className="text-3xl font-bold text-stone-900 mb-6 tracking-tight">Jay Rungta</h2>
-                  <p className="text-lg text-stone-500 font-light leading-relaxed mb-6">
-                    Jay is a visionary designer and developer dedicated to refining the digital landscape of education. With a focus on aesthetic excellence and intuitive architecture, TutorMatch was born out of a desire to create a more meaningful connection between knowledge and those who seek it.
-                  </p>
-                  <p className="text-lg text-stone-500 font-light leading-relaxed">
-                    By blending modern technology with timeless design principles, Jay aims to elevate the tutoring experience into something truly premium and accessible for everyone.
-                  </p>
+            <div className="relative glass-panel rounded-[40px] p-12 border border-white/50 shadow-2xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-end max-w-4xl mx-auto">
+                {/* Creator 1 (Left) */}
+                <div className="flex flex-col items-center gap-6 group">
+                  <div className="relative w-full aspect-square rounded-3xl overflow-hidden shadow-xl border-4 border-white group-hover:scale-[1.02] transition-transform duration-500">
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-600 to-stone-900 opacity-10" />
+                    <img 
+                      src="/creator_jay.jpg" 
+                      alt="Jay Rungta - Creator of TutorMatch" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <h2 className="text-xl font-bold text-stone-900 tracking-tight">Jay Rungta</h2>
+                    <p className="text-[11px] font-bold text-red-600/80 uppercase tracking-widest whitespace-nowrap">
+                      (VCJH 6th grader, CEO and Founder)
+                    </p>
+                  </div>
                 </div>
-                <div className="relative aspect-square rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
-                  <div className="absolute inset-0 bg-gradient-to-br from-red-600 to-stone-900 opacity-20" />
-                  <img 
-                    src="/creator_jay.jpg" 
-                    alt="Jay Rungta - Creator of TutorMatch" 
-                    className="w-full h-full object-cover"
-                  />
+
+                {/* Creator 2 (Right) */}
+                <div className="flex flex-col items-center gap-6 group">
+                  <div className="relative w-full aspect-square rounded-3xl overflow-hidden shadow-xl border-4 border-white group-hover:scale-[1.02] transition-transform duration-500">
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-600 to-stone-900 opacity-10" />
+                    <img 
+                      src="/creator_jay_2.png" 
+                      alt="Viraj Rungta - Creator of TutorMatch" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <h2 className="text-xl font-bold text-stone-900 tracking-tight">Viraj Rungta</h2>
+                    <p className="text-[11px] font-bold text-red-600/80 uppercase tracking-widest whitespace-nowrap">
+                      (BCP 9th grader, Tech Assistant)
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -57,7 +75,7 @@ export default function AboutCreatorPage() {
             <div className="premium-card p-8">
               <h3 className="text-xl font-bold text-stone-900 mb-4 tracking-tight">The Mission</h3>
               <p className="text-stone-500 font-medium leading-relaxed">
-                To bridge the gap between world-class expertise and ambitious learners through a platform that respects the art of teaching.
+                My brother and I are dedicated to connecting tutors with students, streamlining the process to make everyone's job easier.
               </p>
             </div>
             <div className="premium-card p-8">

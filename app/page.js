@@ -86,12 +86,21 @@ export default function HomePage() {
 
         {/* Footer */}
         <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-stone-100 flex flex-col sm:flex-row justify-between items-center gap-8">
-          <Link href="/about" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 rounded-lg bg-stone-900 group-hover:bg-red-600 flex items-center justify-center text-white text-[10px] font-bold shadow-lg shadow-stone-900/10 transition-all duration-300 group-hover:-translate-y-1">
-              TM
-            </div>
-            <p className="font-bold text-stone-900 tracking-tight m-0 transition-colors group-hover:text-red-700">TutorMatch</p>
-          </Link>
+          <div className="flex items-center gap-6">
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="w-8 h-8 rounded-lg bg-stone-900 group-hover:bg-red-600 flex items-center justify-center text-white text-[10px] font-bold shadow-lg shadow-stone-900/10 transition-all duration-300 group-hover:-translate-y-1">
+                TM
+              </div>
+              <p className="font-bold text-stone-900 tracking-tight m-0 transition-colors group-hover:text-red-700">TutorMatch</p>
+            </Link>
+            <div className="w-px h-4 bg-stone-200" />
+            <Link 
+              href="/about" 
+              className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400 hover:text-red-600 transition-colors"
+            >
+              About Creator
+            </Link>
+          </div>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">© 2026 TutorMatch. Elevated Learning.</p>
         </footer>
       </main>
