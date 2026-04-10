@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 export default function AboutCreatorPage() {
   return (
@@ -87,10 +88,7 @@ export default function AboutCreatorPage() {
           </div>
         </div>
 
-        {/* Subtle Footer for About Page */}
-        <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-stone-100 flex justify-center items-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">© 2026 TutorMatch. Crafted for Excellence.</p>
-        </footer>
+        <Footer />
       </main>
     </>
   );
