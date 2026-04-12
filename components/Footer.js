@@ -1,8 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+import TermsModal from './TermsModal';
 
 export default function Footer() {
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
+
   return (
     <footer className="w-full border-t border-stone-100 bg-white/50 backdrop-blur-sm mt-20">
       <div className="max-w-7xl mx-auto px-6 py-16">
@@ -48,7 +52,12 @@ export default function Footer() {
               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-600/80">Legal</h4>
               <nav className="flex flex-col gap-3">
                 <span className="text-sm text-stone-400 font-medium cursor-default">Privacy Policy</span>
-                <span className="text-sm text-stone-400 font-medium cursor-default">Terms of Service</span>
+                <button 
+                  onClick={() => setIsTermsOpen(true)}
+                  className="text-sm text-stone-500 hover:text-red-700 transition-colors font-medium bg-transparent border-0 cursor-pointer text-left p-0"
+                >
+                  Terms and Conditions
+                </button>
               </nav>
             </div>
           </div>
@@ -63,6 +72,8 @@ export default function Footer() {
           </div>
         </div>
       </div>
+
+      <TermsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
     </footer>
   );
 }
