@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import PrivacyModal from './PrivacyModal';
 import TermsModal from './TermsModal';
 
 export default function Footer() {
   const [isTermsOpen, setIsTermsOpen] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
 
   return (
     <footer className="w-full border-t border-stone-100 bg-white/50 backdrop-blur-sm mt-20">
@@ -29,7 +31,7 @@ export default function Footer() {
           </div>
 
           {/* Right Section: Links */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-12 sm:gap-24">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 sm:gap-24 lg:gap-12">
             <div className="flex flex-col gap-4">
               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-600/80">Platform</h4>
               <nav className="flex flex-col gap-3">
@@ -48,16 +50,29 @@ export default function Footer() {
               </nav>
             </div>
 
-            <div className="flex flex-col md:hidden lg:flex flex flex-col gap-4">
+            <div className="flex flex-col gap-4">
               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-600/80">Legal</h4>
               <nav className="flex flex-col gap-3">
-                <span className="text-sm text-stone-400 font-medium cursor-default">Privacy Policy</span>
+                <button 
+                  onClick={() => setIsPrivacyOpen(true)}
+                  className="text-sm text-stone-500 hover:text-red-700 transition-colors font-medium bg-transparent border-0 cursor-pointer text-left p-0"
+                >
+                  Privacy Policy
+                </button>
                 <button 
                   onClick={() => setIsTermsOpen(true)}
                   className="text-sm text-stone-500 hover:text-red-700 transition-colors font-medium bg-transparent border-0 cursor-pointer text-left p-0"
                 >
                   Terms and Conditions
                 </button>
+              </nav>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-600/80">Connect</h4>
+              <nav className="flex flex-col gap-3">
+                <a href="mailto:admin.tutormatch@gmail.com" className="text-sm text-stone-500 hover:text-red-700 transition-colors font-medium break-all">admin.tutormatch@gmail.com</a>
+                <a href="tel:+14083008400" className="text-sm text-stone-500 hover:text-red-700 transition-colors font-medium">+1 408-300-8400</a>
               </nav>
             </div>
           </div>
@@ -74,6 +89,7 @@ export default function Footer() {
       </div>
 
       <TermsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
+      <PrivacyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
     </footer>
   );
 }
