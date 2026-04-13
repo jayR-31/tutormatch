@@ -4,6 +4,7 @@ import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import Image from 'next/image';
 
 function LoginForm() {
   const router = useRouter();
@@ -45,10 +46,13 @@ function LoginForm() {
   return (
     <div className="w-full max-w-md mx-auto bg-white/60 glass-panel rounded-[32px] p-8 sm:p-12 bento-hover shadow-2xl shadow-red-900/5">
       <div className="text-center mb-10 flex flex-col items-center">
-        <img 
+        <Image 
           src="/logo-v2.png" 
           alt="Tutor Match Logo" 
+          width={128}
+          height={128}
           className="h-28 sm:h-32 w-auto object-contain mb-8 hover:scale-105 transition-transform duration-500"
+          priority
         />
         <h1 className="text-3xl font-bold tracking-tight text-stone-900 mb-2">Welcome Back</h1>
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-600 bg-red-50 px-4 py-1.5 rounded-full border border-red-100/50">Secure Access Interface</p>

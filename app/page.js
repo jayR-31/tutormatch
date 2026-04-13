@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import Image from 'next/image';
 
 export default function HomePage() {
   return (
@@ -48,10 +49,13 @@ export default function HomePage() {
             <div className="relative group lg:block hidden">
               <div className="absolute inset-0 bg-red-600/10 rounded-[40px] blur-2xl group-hover:bg-red-600/15 transition-all duration-700" />
               <div className="relative rounded-[40px] overflow-hidden border border-white/50 shadow-2xl glass-panel aspect-[4/5]">
-                <img 
+                <Image 
                   src="/hero_image.png" 
                   alt="TutorMatch Red and Cream Abstract Hero" 
-                  className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
+                  fill
+                  className="object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               </div>
             </div>

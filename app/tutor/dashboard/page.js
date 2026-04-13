@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import ChatThread from '@/components/ChatThread';
@@ -49,7 +49,7 @@ export default function TutorDashboard() {
       .catch(() => router.push('/login'));
   }, [router]);
 
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     if (!user) return;
     try {
       const res = await fetch('/api/sessions');
@@ -58,13 +58,13 @@ export default function TutorDashboard() {
     } catch {
       setUpcomingSessions([]);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user && activeTab === 'sessions') {
       loadSessions();
     }
-  }, [user, activeTab]);
+  }, [user, activeTab, loadSessions]);
 
   useEffect(() => {
     if (user) {

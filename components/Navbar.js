@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Navbar() {
   const router = useRouter();
@@ -28,9 +29,11 @@ export default function Navbar() {
         <Link href="/" className="flex items-center no-underline hover:opacity-80 transition-all active:scale-95">
           <div className="flex items-center gap-3">
             <div className="h-10 w-auto flex items-center justify-center overflow-hidden">
-              <img 
-                src="/logo_premium.png" 
-                alt="TutorMatch Logo" 
+              <Image
+                src="/logo_premium.png"
+                alt="TutorMatch Logo"
+                width={32}
+                height={32}
                 className="h-full w-auto object-contain"
               />
             </div>

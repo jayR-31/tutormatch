@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import Image from 'next/image';
 
 export default function AboutCreatorPage() {
   return (
@@ -37,10 +38,12 @@ export default function AboutCreatorPage() {
                 <div className="flex flex-col items-center gap-6 group">
                   <div className="relative w-full aspect-square rounded-3xl overflow-hidden shadow-xl border-4 border-white group-hover:scale-[1.02] transition-transform duration-500">
                     <div className="absolute inset-0 bg-gradient-to-br from-red-600 to-stone-900 opacity-10" />
-                    <img 
+                    <Image 
                       src="/creator_jay.jpg" 
                       alt="Jay Rungta - Creator of TutorMatch" 
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 400px"
                     />
                   </div>
                   <div className="flex flex-col items-center gap-1">
@@ -55,10 +58,12 @@ export default function AboutCreatorPage() {
                 <div className="flex flex-col items-center gap-6 group">
                   <div className="relative w-full aspect-square rounded-3xl overflow-hidden shadow-xl border-4 border-white group-hover:scale-[1.02] transition-transform duration-500">
                     <div className="absolute inset-0 bg-gradient-to-br from-red-600 to-stone-900 opacity-10" />
-                    <img 
+                    <Image 
                       src="/creator_jay_2.png" 
                       alt="Viraj Rungta - Creator of TutorMatch" 
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 400px"
                     />
                   </div>
                   <div className="flex flex-col items-center gap-1">

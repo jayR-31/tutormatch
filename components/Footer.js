@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import PrivacyModal from './PrivacyModal';
 import TermsModal from './TermsModal';
+import Image from 'next/image';
 
 export default function Footer() {
   const [isTermsOpen, setIsTermsOpen] = useState(false);
@@ -17,9 +18,11 @@ export default function Footer() {
           <div className="flex flex-col gap-6 max-w-xs">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <div className="h-8 w-auto">
-                <img 
+                <Image 
                   src="/logo_premium.png" 
                   alt="TutorMatch Logo" 
+                  width={32}
+                  height={32}
                   className="h-full w-auto object-contain"
                 />
               </div>

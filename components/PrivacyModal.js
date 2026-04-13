@@ -66,7 +66,7 @@ export default function PrivacyModal({ isOpen, onClose }) {
                 <li>5. Cookies & Tracking</li>
                 <li>6. Data Retention</li>
                 <li>7. Your Rights & Choices</li>
-                <li>8. Children's Privacy</li>
+                <li>8. Children{"'"}s Privacy</li>
                 <li>9. Data Security</li>
                 <li>10. Third-Party Links</li>
                 <li>11. International Transfers</li>
@@ -79,7 +79,7 @@ export default function PrivacyModal({ isOpen, onClose }) {
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-600 mb-4">Section 01</h3>
               <h4 className="text-lg font-bold text-stone-900 mb-4">Introduction</h4>
               <p className="text-sm text-stone-500 font-medium leading-relaxed">
-                TutorMatch ("we," "us," or "our") is committed to protecting your personal information. This Privacy Policy explains what data we collect, how we use it, and the choices you have regarding your information when you use our platform at tutormatch.com.
+                TutorMatch ({"\""}we,{"\""} {"\""}us,{"\""} or {"\""}our{"\""}) is committed to protecting your personal information. This Privacy Policy explains what data we collect, how we use it, and the choices you have regarding your information when you use our platform at tutormatch.com.
               </p>
               <p className="text-sm text-stone-500 font-medium leading-relaxed mt-4">
                 By creating an account or using TutorMatch, you agree to the collection and use of information in accordance with this policy. If you do not agree, please discontinue use of the Platform.
@@ -148,7 +148,7 @@ export default function PrivacyModal({ isOpen, onClose }) {
               <div className="space-y-6 mt-6">
                 <div>
                   <h5 className="font-bold text-stone-900 text-sm mb-2">With other users</h5>
-                  <p className="text-sm text-stone-500 font-medium leading-relaxed">Tutor profiles — including name, photo, bio, subjects, and ratings — are visible to students. Students' names and general location may be visible to tutors they have booked or messaged.</p>
+                  <p className="text-sm text-stone-500 font-medium leading-relaxed">Tutor profiles — including name, photo, bio, subjects, and ratings — are visible to students. Students{"'"} names and general location may be visible to tutors they have booked or messaged.</p>
                 </div>
                 <div>
                   <h5 className="font-bold text-stone-900 text-sm mb-2">With service providers</h5>
@@ -215,7 +215,7 @@ export default function PrivacyModal({ isOpen, onClose }) {
 
             <section>
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-600 mb-4">Section 08</h3>
-              <h4 className="text-lg font-bold text-stone-900 mb-4">Children's Privacy</h4>
+              <h4 className="text-lg font-bold text-stone-900 mb-4">Children{"'"}s Privacy</h4>
               <p className="text-sm text-stone-500 font-medium leading-relaxed">
                 TutorMatch is available to users of all ages, and we recognize that some students may be minors. Where a user is under 18, we require verifiable parental or guardian consent before account creation.
               </p>

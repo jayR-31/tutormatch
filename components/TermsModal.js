@@ -65,11 +65,11 @@ export default function TermsModal({ isOpen, onClose }) {
                 <li>4. Account Registration</li>
                 <li>5. Tutor Responsibilities</li>
                 <li>6. Student Responsibilities</li>
-                <li>7. Payments & Fees</li>
+                <li>7. Payments &amp; Fees</li>
                 <li>8. No Refund Policy</li>
                 <li>9. Prohibited Conduct</li>
                 <li>10. Intellectual Property</li>
-                <li>11. Privacy & Data</li>
+                <li>11. Privacy &amp; Data</li>
                 <li>12. Disclaimers</li>
                 <li>13. Limitation of Liability</li>
                 <li>14. Termination</li>
@@ -82,7 +82,7 @@ export default function TermsModal({ isOpen, onClose }) {
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-600 mb-4">Section 01</h3>
               <h4 className="text-lg font-bold text-stone-900 mb-4">Acceptance of Terms</h4>
               <p className="text-sm text-stone-500 font-medium leading-relaxed">
-                By accessing or using TutorMatch ("the Platform," "we," "us," or "our"), you agree to be bound by these Terms and Conditions. Please read them carefully before using our services.
+                By accessing or using TutorMatch ({"\""}the Platform,{"\""} {"\""}we,{"\""} {"\""}us,{"\""} or {"\""}our{"\""}), you agree to be bound by these Terms and Conditions. Please read them carefully before using our services.
               </p>
               <p className="text-sm text-stone-500 font-medium leading-relaxed mt-4">
                 If you do not agree to these terms in their entirety, you may not access or use the Platform. Your continued use constitutes acceptance of any future modifications to these terms, which we will notify you of by updating the effective date above.
@@ -156,20 +156,20 @@ export default function TermsModal({ isOpen, onClose }) {
                 <li>Pay for sessions in accordance with agreed rates and these Terms</li>
               </ul>
               <div className="mt-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl italic text-sm text-red-900 font-medium leading-relaxed">
-                Academic integrity reminder: Using TutorMatch to have a tutor complete your academic work may violate your institution's honor code. TutorMatch is intended to support learning, not to circumvent it.
+                Academic integrity reminder: Using TutorMatch to have a tutor complete your academic work may violate your institution{"'"}s honor code. TutorMatch is intended to support learning, not to circumvent it.
               </div>
             </section>
 
             <section>
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-600 mb-4">Section 07</h3>
-              <h4 className="text-lg font-bold text-stone-900 mb-4">Payments & Fees</h4>
+              <h4 className="text-lg font-bold text-stone-900 mb-4">Payments &amp; Fees</h4>
               <p className="text-sm text-stone-500 font-medium leading-relaxed">
-                TutorMatch charges a service fee on each transaction, deducted from the tutor's earnings. Current fee rates are displayed in your account dashboard and may be updated with 30 days' notice.
+                TutorMatch charges a service fee on each transaction, deducted from the tutor{"'"}s earnings. Current fee rates are displayed in your account dashboard and may be updated with 30 days{"'"} notice.
               </p>
               <div className="space-y-6 mt-6">
                 <div>
                   <h5 className="font-bold text-stone-900 text-sm mb-2">Payment Processing</h5>
-                  <p className="text-sm text-stone-500 font-medium leading-relaxed">All payments are processed through our third-party payment provider. By making a payment, you agree to that provider's terms and privacy policy. TutorMatch does not store full payment card details.</p>
+                  <p className="text-sm text-stone-500 font-medium leading-relaxed">All payments are processed through our third-party payment provider. By making a payment, you agree to that provider{"'"}s terms and privacy policy. TutorMatch does not store full payment card details.</p>
                 </div>
                 <div>
                   <h5 className="font-bold text-stone-900 text-sm mb-2">Tutor Payouts</h5>
@@ -193,10 +193,10 @@ export default function TermsModal({ isOpen, onClose }) {
                   <li>Dissatisfaction with a tutoring session</li>
                   <li>Scheduling conflicts or changes of mind</li>
                   <li>Failure to attend a booked session</li>
-                  <li>Technical issues on the user's end</li>
+                  <li>Technical issues on the user{"'"}s end</li>
                 </ul>
                 <p className="text-sm text-stone-500 font-medium leading-relaxed mt-6">
-                  Please review your booking carefully before completing payment. All sales are final. If you experience a technical issue on TutorMatch's end that prevents a session from occurring, please contact our support team — such cases are reviewed at TutorMatch's sole discretion.
+                  Please review your booking carefully before completing payment. All sales are final. If you experience a technical issue on TutorMatch{"'"}s end that prevents a session from occurring, please contact our support team — such cases are reviewed at TutorMatch{"'"}s sole discretion.
                 </p>
               </div>
             </section>
@@ -211,7 +211,7 @@ export default function TermsModal({ isOpen, onClose }) {
                 <li>Harassment, discrimination, or abusive behavior toward any user</li>
                 <li>Soliciting or accepting payments outside the Platform to circumvent fees</li>
                 <li>Creating fake reviews or manipulating the rating system</li>
-                <li>Sharing another user's personal information without consent</li>
+                <li>Sharing another user{"'"}s personal information without consent</li>
                 <li>Uploading malicious software or attempting to compromise Platform security</li>
                 <li>Impersonating another person or misrepresenting affiliation with any entity</li>
                 <li>Any unlawful activity including fraud, money laundering, or exploitation of minors</li>
@@ -250,7 +250,7 @@ export default function TermsModal({ isOpen, onClose }) {
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-600 mb-4">Section 12</h3>
               <h4 className="text-lg font-bold text-stone-900 mb-4">Disclaimers</h4>
               <p className="text-sm text-stone-500 font-medium leading-relaxed italic">
-                TutorMatch provides the Platform on an "as is" and "as available" basis. We do not warrant that the Platform will be uninterrupted, error-free, or free of harmful components.
+                TutorMatch provides the Platform on an {"\""}as is{"\""} and {"\""}as available{"\""} basis. We do not warrant that the Platform will be uninterrupted, error-free, or free of harmful components.
               </p>
               <p className="text-sm text-stone-500 font-medium leading-relaxed mt-4">
                 While we take steps to vet tutors, TutorMatch makes no guarantees regarding tutor qualifications, the quality of tutoring sessions, or specific academic outcomes for students. Users engage with one another at their own risk.
