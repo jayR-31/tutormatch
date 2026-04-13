@@ -447,6 +447,7 @@ export default function StudentDashboard() {
                     onSendMessage={sendMessage}
                     otherName={chatOtherName}
                     onRefreshMessages={() => openConversation(activeConversation)}
+                    conversationId={activeConversation}
                   />
                 </>
               ) : (

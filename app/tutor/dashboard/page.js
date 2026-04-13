@@ -309,6 +309,7 @@ export default function TutorDashboard() {
                     onSendMessage={sendMessage}
                     otherName={chatOtherName}
                     onRefreshMessages={() => openConversation(activeConversation)}
+                    conversationId={activeConversation}
                   />
                 </>
               ) : (

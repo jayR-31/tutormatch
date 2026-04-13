@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 
-export default function ChatThread({ messages, currentUserId, otherId, onSendMessage, otherName, onRefreshMessages }) {
+export default function ChatThread({ messages, currentUserId, otherId, onSendMessage, otherName, onRefreshMessages, conversationId }) {
   const [newMessage, setNewMessage] = useState('');
   const [showProposal, setShowProposal] = useState(false);
   
@@ -40,7 +40,7 @@ export default function ChatThread({ messages, currentUserId, otherId, onSendMes
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           receiverId: otherId,
-          conversationId: messages[0]?.conversation_id,
+          conversationId: conversationId ?? messages[0]?.conversation_id,
           date: propDate,
           time: propTime,
           duration_minutes: parseInt(propDuration),

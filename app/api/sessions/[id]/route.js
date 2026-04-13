@@ -23,8 +23,18 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 });
     }
 
-    if (session.receiver_id !== user.id) {
-       return NextResponse.json({ error: 'Only the receiver can accept or decline' }, { status: 403 });
+    if (session.is_group) {
+      // For group sessions, verify user is a participant in the conversation
+      const isParticipant = db.prepare(
+        'SELECT id FROM conversation_participants WHERE conversation_id = ? AND user_id = ?'
+      ).get(session.conversation_id, user.id);
+      if (!isParticipant) {
+        return NextResponse.json({ error: 'Only participants can accept or decline' }, { status: 403 });
+      }
+    } else {
+      if (session.receiver_id !== user.id) {
+        return NextResponse.json({ error: 'Only the receiver can accept or decline' }, { status: 403 });
+      }
     }
 
     // Update status
