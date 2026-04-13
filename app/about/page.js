@@ -69,7 +69,7 @@ export default function AboutCreatorPage() {
                   <div className="flex flex-col items-center gap-1">
                     <h2 className="text-xl font-bold text-stone-900 tracking-tight">Viraj Rungta</h2>
                     <p className="text-[11px] font-bold text-red-600/80 uppercase tracking-widest whitespace-nowrap">
-                      (BCP 9th grader, Tech Assistant)
+                      (BCP 9th grader, Chief Technology Officer (CTO))
                     </p>
                   </div>
                 </div>
