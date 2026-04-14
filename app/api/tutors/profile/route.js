@@ -1,20 +1,22 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { doc, getDoc, updateDoc, docToObj } from '@/lib/firestore';
+import { db } from '@/lib/firebase';
 
 export async function GET() {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const db = getDb();
-    const profile = db.prepare('SELECT * FROM tutor_profiles WHERE user_id = ?').get(user.id);
-    if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+    const profileSnap = await getDoc(doc(db, 'tutorProfiles', user.id));
+    if (!profileSnap.exists()) return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+
+    const profile = docToObj(profileSnap);
 
     return NextResponse.json({
       ...profile,
-      subjects: JSON.parse(profile.subjects || '[]'),
-      grade_levels: JSON.parse(profile.grade_levels || '[]'),
+      subjects: profile.subjects || [],
+      grade_levels: profile.grade_levels || [],
     });
   } catch (error) {
     console.error('Get tutor profile error:', error);
@@ -28,27 +30,20 @@ export async function PUT(request) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const data = await request.json();
-    const db = getDb();
 
-    db.prepare(`
-      UPDATE tutor_profiles SET
-        name = ?, age = ?, zip_code = ?, subjects = ?, skills = ?,
-        format_type = ?, bio = ?, photo_url = ?, grade_levels = ?
-      WHERE user_id = ?
-    `).run(
-      data.name || '',
-      data.age || null,
-      data.zip_code || '',
-      JSON.stringify(data.subjects || []),
-      data.skills || '',
-      data.format_type || 'online',
-      data.bio || '',
-      data.photo_url || '',
-      JSON.stringify(data.grade_levels || []),
-      user.id
-    );
+    await updateDoc(doc(db, 'tutorProfiles', user.id), {
+      name: data.name || '',
+      age: data.age || null,
+      zip_code: data.zip_code || '',
+      subjects: data.subjects || [],
+      skills: data.skills || '',
+      format_type: data.format_type || 'online',
+      bio: data.bio || '',
+      photo_url: data.photo_url || '',
+      grade_levels: data.grade_levels || [],
+    });
 
-    db.prepare('UPDATE users SET onboarded = 1 WHERE id = ?').run(user.id);
+    await updateDoc(doc(db, 'users', user.id), { onboarded: true });
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -1,7 +1,18 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
 import { hashPassword, createToken, setAuthCookie } from '@/lib/auth';
 import ztz from 'zipcode-to-timezone';
+import {
+  usersCol,
+  tutorProfilesCol,
+  studentProfilesCol,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  setDoc,
+  doc,
+} from '@/lib/firestore';
+import { db } from '@/lib/firebase';
 
 export async function POST(request) {
   try {
@@ -16,25 +27,55 @@ export async function POST(request) {
     }
 
     const timezone = ztz.lookup(zipCode) || 'UTC';
-    const db = getDb();
 
-    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
-    if (existing) {
+    // Check if email already exists
+    const existingQuery = query(usersCol(), where('email', '==', email));
+    const existingSnap = await getDocs(existingQuery);
+    if (!existingSnap.empty) {
       return NextResponse.json({ error: 'Email already registered' }, { status: 409 });
     }
 
     const password_hash = await hashPassword(password);
-    const result = db.prepare(
-      'INSERT INTO users (email, password_hash, role, zip_code, timezone) VALUES (?, ?, ?, ?, ?)'
-    ).run(email, password_hash, role, zipCode, timezone);
 
-    const user = { id: result.lastInsertRowid, email, role };
+    // Create user document
+    const userDoc = await addDoc(usersCol(), {
+      email,
+      password_hash,
+      role,
+      zip_code: zipCode,
+      timezone,
+      onboarded: false,
+      created_at: new Date().toISOString(),
+    });
 
-    // Create empty profile with zip code
+    const user = { id: userDoc.id, email, role };
+
+    // Create empty profile with zip code, using same ID as user doc
     if (role === 'student') {
-      db.prepare('INSERT INTO student_profiles (user_id, zip_code) VALUES (?, ?)').run(user.id, zipCode);
+      await setDoc(doc(db, 'studentProfiles', userDoc.id), {
+        user_id: userDoc.id,
+        name: '',
+        age: null,
+        grade: '',
+        school: '',
+        zip_code: zipCode,
+        format_pref: 'online',
+        subjects: [],
+        photo_url: '',
+      });
     } else {
-      db.prepare('INSERT INTO tutor_profiles (user_id, zip_code) VALUES (?, ?)').run(user.id, zipCode);
+      await setDoc(doc(db, 'tutorProfiles', userDoc.id), {
+        user_id: userDoc.id,
+        name: '',
+        age: null,
+        zip_code: zipCode,
+        subjects: [],
+        skills: '',
+        format_type: 'online',
+        bio: '',
+        photo_url: '',
+        grade_levels: [],
+      });
     }
 
     const token = createToken(user);

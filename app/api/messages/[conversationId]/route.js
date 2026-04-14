@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  query,
+  where,
+  orderBy,
+  docToObj,
+} from '@/lib/firestore';
 
 export async function GET(request, { params }) {
   try {
@@ -8,61 +19,92 @@ export async function GET(request, { params }) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { conversationId } = await params;
-    const db = getDb();
 
     // Verify user is part of conversation
-    const participant = db.prepare(
-      'SELECT id FROM conversation_participants WHERE conversation_id = ? AND user_id = ?'
-    ).get(conversationId, user.id);
-
-    if (!participant) {
+    const partSnap = await getDoc(doc(db, 'conversations', conversationId, 'participants', user.id));
+    if (!partSnap.exists()) {
       return NextResponse.json({ error: 'Conversation not found or access denied' }, { status: 404 });
     }
 
-    const conversation = db.prepare('SELECT * FROM conversations WHERE id = ?').get(conversationId);
+    const convSnap = await getDoc(doc(db, 'conversations', conversationId));
+    const conversation = convSnap.exists() ? docToObj(convSnap) : {};
 
-    // Mark messages as read
-    db.prepare(
-      'UPDATE messages SET read = 1 WHERE conversation_id = ? AND sender_id != ?'
-    ).run(conversationId, user.id);
+    // Get all messages
+    const msgsQuery = query(
+      collection(db, 'conversations', conversationId, 'messages'),
+      orderBy('created_at', 'asc')
+    );
+    const msgsSnap = await getDocs(msgsQuery);
 
-    // Get messages
-    const messages = db.prepare(`
-      SELECT m.*, 
-        CASE WHEN m.sender_id = sp.user_id THEN sp.name
-             WHEN m.sender_id = tp.user_id THEN tp.name
-             ELSE 'Unknown' END as sender_name,
-        s.date as session_date,
-        s.time as session_time,
-        s.duration_minutes as session_duration,
-        s.format as session_format,
-        s.status as session_status,
-        s.subjects as session_subjects
-      FROM messages m
-      LEFT JOIN student_profiles sp ON m.sender_id = sp.user_id
-      LEFT JOIN tutor_profiles tp ON m.sender_id = tp.user_id
-      LEFT JOIN sessions s ON m.reference_id = s.id
-      WHERE m.conversation_id = ?
-      ORDER BY m.created_at ASC
-    `).all(conversationId);
+    // Build messages with sender names and session data
+    const messages = [];
+    for (const msgDoc of msgsSnap.docs) {
+      const msg = docToObj(msgDoc);
 
-    // Get other participants' info
+      // Mark as read if not from current user
+      if (msg.sender_id !== user.id && !msg.read) {
+        await updateDoc(doc(db, 'conversations', conversationId, 'messages', msgDoc.id), {
+          read: true,
+        });
+      }
+
+      // Get sender name
+      let senderName = 'Unknown';
+      const tutorSnap = await getDoc(doc(db, 'tutorProfiles', msg.sender_id));
+      if (tutorSnap.exists() && tutorSnap.data().name) {
+        senderName = tutorSnap.data().name;
+      } else {
+        const studentSnap = await getDoc(doc(db, 'studentProfiles', msg.sender_id));
+        if (studentSnap.exists() && studentSnap.data().name) {
+          senderName = studentSnap.data().name;
+        }
+      }
+
+      // Get linked session data if reference_id exists
+      let sessionData = {};
+      if (msg.reference_id) {
+        const sessionSnap = await getDoc(doc(db, 'sessions', msg.reference_id));
+        if (sessionSnap.exists()) {
+          const session = sessionSnap.data();
+          sessionData = {
+            session_date: session.date,
+            session_time: session.time,
+            session_duration: session.duration_minutes,
+            session_format: session.format,
+            session_status: session.status,
+            session_subjects: session.subjects,
+          };
+        }
+      }
+
+      messages.push({
+        ...msg,
+        sender_name: senderName,
+        ...sessionData,
+      });
+    }
+
+    // Get other participant info
     let otherName = 'Unknown';
     let otherId = null;
 
     if (conversation.is_group) {
       otherName = conversation.name || 'Group Chat';
     } else {
-      const otherPart = db.prepare('SELECT user_id FROM conversation_participants WHERE conversation_id = ? AND user_id != ?').get(conversationId, user.id);
-      if (otherPart) {
-        otherId = otherPart.user_id;
-        const otherUser = db.prepare('SELECT role FROM users WHERE id = ?').get(otherId);
-        if (otherUser?.role === 'tutor') {
-          const tp = db.prepare('SELECT name FROM tutor_profiles WHERE user_id = ?').get(otherId);
-          otherName = tp?.name || 'Unknown';
-        } else {
-          const sp = db.prepare('SELECT name FROM student_profiles WHERE user_id = ?').get(otherId);
-          otherName = sp?.name || 'Unknown';
+      const partsSnap = await getDocs(collection(db, 'conversations', conversationId, 'participants'));
+      for (const partDoc of partsSnap.docs) {
+        if (partDoc.id !== user.id) {
+          otherId = partDoc.id;
+          const tutorSnap = await getDoc(doc(db, 'tutorProfiles', partDoc.id));
+          if (tutorSnap.exists() && tutorSnap.data().name) {
+            otherName = tutorSnap.data().name;
+          } else {
+            const studentSnap = await getDoc(doc(db, 'studentProfiles', partDoc.id));
+            if (studentSnap.exists() && studentSnap.data().name) {
+              otherName = studentSnap.data().name;
+            }
+          }
+          break;
         }
       }
     }

@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import {
+  usersCol,
+  tutorProfilesCol,
+  getDocs,
+  query,
+  where,
+  queryToArray,
+  docToObj,
+} from '@/lib/firestore';
 
 export async function GET(request) {
   try {
@@ -9,45 +17,57 @@ export async function GET(request) {
     const grade = searchParams.get('grade') || '';
     const format = searchParams.get('format') || '';
 
-    const db = getDb();
+    // Get all onboarded users
+    const usersQuery = query(usersCol(), where('onboarded', '==', true), where('role', '==', 'tutor'));
+    const usersSnap = await getDocs(usersQuery);
+    const onboardedUserIds = new Set(usersSnap.docs.map(d => d.id));
+    const userEmailMap = {};
+    usersSnap.docs.forEach(d => {
+      userEmailMap[d.id] = d.data().email;
+    });
 
-    let query = 'SELECT tp.*, u.email FROM tutor_profiles tp JOIN users u ON tp.user_id = u.id WHERE u.onboarded = 1';
-    const params = [];
+    // Get all tutor profiles
+    const profilesSnap = await getDocs(tutorProfilesCol());
+    let tutors = profilesSnap.docs
+      .filter(d => onboardedUserIds.has(d.id))
+      .map(d => ({
+        ...docToObj(d),
+        email: userEmailMap[d.id] || '',
+      }));
 
+    // Apply filters client-side (Firestore doesn't support LIKE queries)
     if (zip) {
-      query += ' AND tp.zip_code = ?';
-      params.push(zip);
+      tutors = tutors.filter(t => t.zip_code === zip);
     }
 
     if (subject) {
-      query += ' AND tp.subjects LIKE ?';
-      params.push(`%${subject}%`);
+      tutors = tutors.filter(t =>
+        (t.subjects || []).some(s =>
+          s.toLowerCase().includes(subject.toLowerCase())
+        )
+      );
     }
 
     if (grade) {
-      query += ' AND tp.grade_levels LIKE ?';
-      params.push(`%${grade}%`);
+      tutors = tutors.filter(t =>
+        (t.grade_levels || []).some(g =>
+          g.toLowerCase().includes(grade.toLowerCase())
+        )
+      );
     }
 
     if (format && format !== 'all') {
-      if (format === 'online') {
-        query += " AND (tp.format_type = 'online' OR tp.format_type = 'both')";
-      } else if (format === 'in-person') {
-        query += " AND (tp.format_type = 'in-person' OR tp.format_type = 'both')";
-      }
+      tutors = tutors.filter(t => {
+        if (format === 'online') return t.format_type === 'online' || t.format_type === 'both';
+        if (format === 'in-person') return t.format_type === 'in-person' || t.format_type === 'both';
+        return true;
+      });
     }
 
-    query += ' ORDER BY tp.name ASC';
+    // Sort by name
+    tutors.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
-    const tutors = db.prepare(query).all(...params);
-
-    const result = tutors.map(t => ({
-      ...t,
-      subjects: JSON.parse(t.subjects || '[]'),
-      grade_levels: JSON.parse(t.grade_levels || '[]'),
-    }));
-
-    return NextResponse.json(result);
+    return NextResponse.json(tutors);
   } catch (error) {
     console.error('Search tutors error:', error);
     return NextResponse.json({ error: 'Search failed' }, { status: 500 });

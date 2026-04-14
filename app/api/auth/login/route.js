@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
 import { verifyPassword, createToken, setAuthCookie } from '@/lib/auth';
+import {
+  usersCol,
+  docToObj,
+  getDocs,
+  query,
+  where,
+} from '@/lib/firestore';
 
 export async function POST(request) {
   try {
@@ -10,12 +16,16 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
-    const db = getDb();
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    // Find user by email
+    const userQuery = query(usersCol(), where('email', '==', email));
+    const userSnap = await getDocs(userQuery);
 
-    if (!user) {
+    if (userSnap.empty) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
+
+    const userDoc = userSnap.docs[0];
+    const user = docToObj(userDoc);
 
     const valid = await verifyPassword(password, user.password_hash);
     if (!valid) {

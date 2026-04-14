@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser, verifyPassword } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { doc, getDoc, docToObj } from '@/lib/firestore';
+import { db } from '@/lib/firebase';
 
 export async function POST(request) {
   try {
@@ -12,13 +13,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Password is required' }, { status: 400 });
     }
 
-    const db = getDb();
-    const storedUser = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(user.id);
-    
-    if (!storedUser) {
+    const userSnap = await getDoc(doc(db, 'users', user.id));
+
+    if (!userSnap.exists()) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    const storedUser = docToObj(userSnap);
     const isValid = await verifyPassword(password, storedUser.password_hash);
 
     if (isValid) {

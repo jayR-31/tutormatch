@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { doc, getDoc, docToObj } from '@/lib/firestore';
+import { db } from '@/lib/firebase';
 
 export async function GET() {
   try {
@@ -9,17 +10,24 @@ export async function GET() {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const db = getDb();
-    const dbUser = db.prepare('SELECT id, email, role, onboarded FROM users WHERE id = ?').get(user.id);
+    const userSnap = await getDoc(doc(db, 'users', user.id));
 
-    if (!dbUser) {
-      // Clear invalid cookie
+    if (!userSnap.exists()) {
       const { clearAuthCookie } = await import('@/lib/auth');
       await clearAuthCookie();
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ user: dbUser });
+    const dbUser = docToObj(userSnap);
+
+    return NextResponse.json({
+      user: {
+        id: dbUser.id,
+        email: dbUser.email,
+        role: dbUser.role,
+        onboarded: dbUser.onboarded,
+      },
+    });
   } catch (error) {
     console.error('Auth check error:', error);
     return NextResponse.json({ error: 'Auth check failed' }, { status: 500 });

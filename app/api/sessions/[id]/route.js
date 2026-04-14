@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import {
+  collection,
+  doc,
+  getDoc,
+  addDoc,
+  updateDoc,
+  docToObj,
+} from '@/lib/firestore';
 
 export async function PUT(request, { params }) {
   try {
@@ -14,21 +22,18 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
     }
 
-    const db = getDb();
-
-    // Check if session exists and user is the receiver
-    const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(id);
-
-    if (!session) {
+    // Check if session exists
+    const sessionSnap = await getDoc(doc(db, 'sessions', id));
+    if (!sessionSnap.exists()) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 });
     }
 
+    const session = docToObj(sessionSnap);
+
     if (session.is_group) {
-      // For group sessions, verify user is a participant in the conversation
-      const isParticipant = db.prepare(
-        'SELECT id FROM conversation_participants WHERE conversation_id = ? AND user_id = ?'
-      ).get(session.conversation_id, user.id);
-      if (!isParticipant) {
+      // Verify user is a participant in the conversation
+      const partSnap = await getDoc(doc(db, 'conversations', session.conversation_id, 'participants', user.id));
+      if (!partSnap.exists()) {
         return NextResponse.json({ error: 'Only participants can accept or decline' }, { status: 403 });
       }
     } else {
@@ -38,16 +43,23 @@ export async function PUT(request, { params }) {
     }
 
     // Update status
-    db.prepare('UPDATE sessions SET status = ? WHERE id = ?').run(status, id);
+    await updateDoc(doc(db, 'sessions', id), { status });
 
-    // Insert a system message letting the channel know
+    // Insert a system message
     const content = status === 'accepted' ? 'Session proposal was accepted.' : 'Session proposal was declined.';
-    db.prepare(`
-      INSERT INTO messages (conversation_id, sender_id, content, type) 
-      VALUES (?, ?, ?, 'text')
-    `).run(session.conversation_id, user.id, content);
-    
-    db.prepare('UPDATE conversations SET last_message_at = CURRENT_TIMESTAMP WHERE id = ?').run(session.conversation_id);
+    await addDoc(collection(db, 'conversations', session.conversation_id, 'messages'), {
+      conversation_id: session.conversation_id,
+      sender_id: user.id,
+      content,
+      type: 'text',
+      reference_id: null,
+      read: false,
+      created_at: new Date().toISOString(),
+    });
+
+    await updateDoc(doc(db, 'conversations', session.conversation_id), {
+      last_message_at: new Date().toISOString(),
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

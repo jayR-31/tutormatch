@@ -1,35 +1,97 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  addDoc,
+  updateDoc,
+  query,
+  where,
+  orderBy,
+  limit,
+  docToObj,
+} from '@/lib/firestore';
 
 export async function GET() {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const db = getDb();
+    // Get all conversations where user is a participant
+    const convsSnap = await getDocs(collection(db, 'conversations'));
+    const conversations = [];
 
-    // Get conversations user is a participant of
-    const conversations = db.prepare(`
-      SELECT c.*,
-        CASE 
-          WHEN c.is_group = 1 THEN c.name 
-          ELSE (
-            SELECT name FROM (
-              SELECT name FROM student_profiles sp JOIN conversation_participants cp ON sp.user_id = cp.user_id WHERE cp.conversation_id = c.id AND cp.user_id != ?
-              UNION
-              SELECT name FROM tutor_profiles tp JOIN conversation_participants cp ON tp.user_id = cp.user_id WHERE cp.conversation_id = c.id AND cp.user_id != ?
-            ) LIMIT 1
-          )
-        END as other_name,
-        (SELECT user_id FROM conversation_participants WHERE conversation_id = c.id AND user_id != ? LIMIT 1) as other_id,
-        (SELECT content FROM messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message,
-        (SELECT COUNT(*) FROM messages WHERE conversation_id = c.id AND sender_id != ? AND read = 0) as unread_count
-      FROM conversations c
-      JOIN conversation_participants cp_me ON c.id = cp_me.conversation_id
-      WHERE cp_me.user_id = ?
-      ORDER BY c.last_message_at DESC
-    `).all(user.id, user.id, user.id, user.id, user.id);
+    for (const convDoc of convsSnap.docs) {
+      const conv = docToObj(convDoc);
+
+      // Check if user is a participant
+      const partSnap = await getDoc(doc(db, 'conversations', conv.id, 'participants', user.id));
+      if (!partSnap.exists()) continue;
+
+      // Get messages for this conversation
+      const msgsQuery = query(
+        collection(db, 'conversations', conv.id, 'messages'),
+        orderBy('created_at', 'desc'),
+        limit(1)
+      );
+      const msgsSnap = await getDocs(msgsQuery);
+      const lastMessage = msgsSnap.empty ? '' : msgsSnap.docs[0].data().content;
+
+      // Count unread messages
+      const unreadQuery = query(
+        collection(db, 'conversations', conv.id, 'messages'),
+        where('sender_id', '!=', user.id),
+        where('read', '==', false)
+      );
+      let unreadCount = 0;
+      try {
+        const unreadSnap = await getDocs(unreadQuery);
+        unreadCount = unreadSnap.size;
+      } catch {
+        // Composite query may need index, fall back to 0
+      }
+
+      // Get other participant name
+      let otherName = conv.name || 'Unknown';
+      let otherId = null;
+
+      if (!conv.is_group) {
+        const partsSnap = await getDocs(collection(db, 'conversations', conv.id, 'participants'));
+        for (const partDoc of partsSnap.docs) {
+          if (partDoc.id !== user.id) {
+            otherId = partDoc.id;
+            // Try tutor profile first, then student
+            const tutorSnap = await getDoc(doc(db, 'tutorProfiles', partDoc.id));
+            if (tutorSnap.exists() && tutorSnap.data().name) {
+              otherName = tutorSnap.data().name;
+            } else {
+              const studentSnap = await getDoc(doc(db, 'studentProfiles', partDoc.id));
+              if (studentSnap.exists() && studentSnap.data().name) {
+                otherName = studentSnap.data().name;
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      conversations.push({
+        id: conv.id,
+        is_group: conv.is_group || false,
+        name: conv.name || null,
+        last_message_at: conv.last_message_at || '',
+        other_name: otherName,
+        other_id: otherId,
+        last_message: lastMessage,
+        unread_count: unreadCount,
+      });
+    }
+
+    // Sort by last_message_at descending
+    conversations.sort((a, b) => (b.last_message_at || '').localeCompare(a.last_message_at || ''));
 
     return NextResponse.json(conversations);
   } catch (error) {
@@ -49,70 +111,95 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Content and participants or conversationId required' }, { status: 400 });
     }
 
-    const db = getDb();
     let conversationId = reqConvId;
 
     if (conversationId) {
       // Verify user is a participant
-      const participant = db.prepare(
-        'SELECT id FROM conversation_participants WHERE conversation_id = ? AND user_id = ?'
-      ).get(conversationId, user.id);
-      
-      if (!participant) {
+      const partSnap = await getDoc(doc(db, 'conversations', conversationId, 'participants', user.id));
+      if (!partSnap.exists()) {
         return NextResponse.json({ error: 'Access denied' }, { status: 403 });
       }
     } else if (isGroup || participantIds) {
       // Create new group chat
       const allParticipants = [...new Set([...(participantIds || []), user.id])];
-      const result = db.prepare(
-        'INSERT INTO conversations (is_group, name) VALUES (1, ?)'
-      ).run(name || 'Group Chat');
-      conversationId = result.lastInsertRowid;
+      const convDoc = await addDoc(collection(db, 'conversations'), {
+        is_group: true,
+        name: name || 'Group Chat',
+        last_message_at: new Date().toISOString(),
+      });
+      conversationId = convDoc.id;
 
-      const insertPart = db.prepare('INSERT INTO conversation_participants (conversation_id, user_id) VALUES (?, ?)');
       for (const pid of allParticipants) {
-        insertPart.run(conversationId, pid);
+        const { setDoc } = await import('@/lib/firestore');
+        await setDoc(doc(db, 'conversations', conversationId, 'participants', pid), {
+          user_id: pid,
+          joined_at: new Date().toISOString(),
+        });
       }
     } else {
-      // 1-to-1 conversation
-      // Find existing
-      const existing = db.prepare(`
-        SELECT cp1.conversation_id FROM conversation_participants cp1
-        JOIN conversation_participants cp2 ON cp1.conversation_id = cp2.conversation_id
-        JOIN conversations c ON cp1.conversation_id = c.id
-        WHERE c.is_group = 0 AND cp1.user_id = ? AND cp2.user_id = ?
-      `).get(user.id, receiverId);
+      // 1-to-1 conversation — find existing
+      const convsSnap = await getDocs(collection(db, 'conversations'));
+      let found = false;
 
-      if (existing) {
-        conversationId = existing.conversation_id;
-      } else {
-        const student_id = user.role === 'student' ? user.id : receiverId;
-        const tutor_id = user.role === 'tutor' ? user.id : receiverId;
-        
-        const createConv = db.transaction(() => {
-          const result = db.prepare('INSERT INTO conversations (is_group, student_id, tutor_id) VALUES (0, ?, ?)').run(student_id, tutor_id);
-          const newId = result.lastInsertRowid;
-          db.prepare('INSERT INTO conversation_participants (conversation_id, user_id) VALUES (?, ?)').run(newId, user.id);
-          db.prepare('INSERT INTO conversation_participants (conversation_id, user_id) VALUES (?, ?)').run(newId, receiverId);
-          return newId;
+      for (const convDoc of convsSnap.docs) {
+        const conv = convDoc.data();
+        if (conv.is_group) continue;
+
+        const partsSnap = await getDocs(collection(db, 'conversations', convDoc.id, 'participants'));
+        const partIds = partsSnap.docs.map(d => d.id);
+
+        if (partIds.includes(user.id) && partIds.includes(receiverId) && partIds.length === 2) {
+          conversationId = convDoc.id;
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        const { setDoc } = await import('@/lib/firestore');
+        const convDoc = await addDoc(collection(db, 'conversations'), {
+          is_group: false,
+          student_id: user.role === 'student' ? user.id : receiverId,
+          tutor_id: user.role === 'tutor' ? user.id : receiverId,
+          last_message_at: new Date().toISOString(),
         });
-        
-        conversationId = createConv();
+        conversationId = convDoc.id;
+
+        await setDoc(doc(db, 'conversations', conversationId, 'participants', user.id), {
+          user_id: user.id,
+          joined_at: new Date().toISOString(),
+        });
+        await setDoc(doc(db, 'conversations', conversationId, 'participants', receiverId), {
+          user_id: receiverId,
+          joined_at: new Date().toISOString(),
+        });
       }
     }
 
     // Insert message
-    db.prepare(
-      'INSERT INTO messages (conversation_id, sender_id, content) VALUES (?, ?, ?)'
-    ).run(conversationId, user.id, content);
+    await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
+      conversation_id: conversationId,
+      sender_id: user.id,
+      content,
+      read: false,
+      type: 'text',
+      reference_id: null,
+      created_at: new Date().toISOString(),
+    });
 
-    // Resolve receiverId for 1-on-1 if missing (for legacy logic like auto-payment)
+    // Resolve receiverId for 1-on-1 if missing
     let targetReceiverId = receiverId;
     if (!targetReceiverId && conversationId) {
-      const conv = db.prepare('SELECT is_group FROM conversations WHERE id = ?').get(conversationId);
-      if (conv && !conv.is_group) {
-        const other = db.prepare('SELECT user_id FROM conversation_participants WHERE conversation_id = ? AND user_id != ?').get(conversationId, user.id);
-        targetReceiverId = other?.user_id;
+      const convSnap = await getDoc(doc(db, 'conversations', conversationId));
+      const conv = convSnap.exists() ? convSnap.data() : {};
+      if (!conv.is_group) {
+        const partsSnap = await getDocs(collection(db, 'conversations', conversationId, 'participants'));
+        for (const partDoc of partsSnap.docs) {
+          if (partDoc.id !== user.id) {
+            targetReceiverId = partDoc.id;
+            break;
+          }
+        }
       }
     }
 
@@ -124,20 +211,26 @@ export async function POST(request) {
         if (!isNaN(amount)) {
           const paidAmount = Math.max(0, amount - 15);
           const autoResponse = `[System Message] The student has sent a payment of $${paidAmount.toFixed(2)}.`;
-          
-          db.prepare(
-            'INSERT INTO messages (conversation_id, sender_id, content) VALUES (?, ?, ?)'
-          ).run(conversationId, targetReceiverId, autoResponse);
+
+          await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
+            conversation_id: conversationId,
+            sender_id: targetReceiverId,
+            content: autoResponse,
+            read: false,
+            type: 'text',
+            reference_id: null,
+            created_at: new Date().toISOString(),
+          });
         }
       }
     }
 
     // Update last message time
-    db.prepare(
-      'UPDATE conversations SET last_message_at = CURRENT_TIMESTAMP WHERE id = ?'
-    ).run(conversationId);
+    await updateDoc(doc(db, 'conversations', conversationId), {
+      last_message_at: new Date().toISOString(),
+    });
 
-    return NextResponse.json({ success: true, conversationId: conversationId });
+    return NextResponse.json({ success: true, conversationId });
   } catch (error) {
     console.error('Send message error:', error);
     return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
