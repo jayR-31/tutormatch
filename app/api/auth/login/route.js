@@ -35,9 +35,14 @@ export async function POST(request) {
     const token = createToken({ id: user.id, email: user.email, role: user.role });
     await setAuthCookie(token);
 
-    const redirect = user.onboarded
-      ? `/${user.role}/dashboard`
-      : `/${user.role}/onboarding`;
+    let redirect;
+    if (!user.onboarded) {
+      redirect = `/${user.role}/onboarding`;
+    } else if (user.role === 'tutor' && !user.subscribed) {
+      redirect = '/tutor/subscription';
+    } else {
+      redirect = `/${user.role}/dashboard`;
+    }
 
     return NextResponse.json({
       user: { id: user.id, email: user.email, role: user.role },

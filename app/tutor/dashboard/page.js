@@ -44,6 +44,10 @@ export default function TutorDashboard() {
           router.push('/student/dashboard');
           return;
         }
+        if (!data.user.subscribed) {
+          router.push('/tutor/subscription');
+          return;
+        }
         setUser(data.user);
       })
       .catch(() => router.push('/login'));

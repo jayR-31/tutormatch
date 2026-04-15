@@ -68,7 +68,7 @@ export default function TutorOnboarding() {
         return;
       }
 
-      router.push('/tutor/dashboard');
+      router.push('/tutor/subscription');
     } catch {
       setError('Something went wrong');
       setLoading(false);

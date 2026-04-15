@@ -26,6 +26,7 @@ export async function GET() {
         email: dbUser.email,
         role: dbUser.role,
         onboarded: dbUser.onboarded,
+        subscribed: dbUser.subscribed || false,
       },
     });
   } catch (error) {
