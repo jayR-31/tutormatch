@@ -29,6 +29,17 @@ export default function TutorDashboard() {
   const [editSaving, setEditSaving] = useState(false);
   const [editMsg, setEditMsg] = useState('');
 
+  // Find Students state
+  const [studentResults, setStudentResults] = useState([]);
+  const [studentSearch, setStudentSearch] = useState('');
+  const [studentSubjectFilter, setStudentSubjectFilter] = useState('');
+  const [studentGradeFilter, setStudentGradeFilter] = useState('');
+  const [studentsLoading, setStudentsLoading] = useState(false);
+  const [messageStudent, setMessageStudent] = useState(null);
+  const [outreachMessage, setOutreachMessage] = useState('');
+  const [sendingOutreach, setSendingOutreach] = useState(false);
+  const [outreachSent, setOutreachSent] = useState('');
+
   // Password verification state
   const [editMode, setEditMode] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
@@ -202,6 +213,47 @@ export default function TutorDashboard() {
     setEditSaving(false);
   };
 
+  const searchStudents = useCallback(async () => {
+    setStudentsLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (studentSearch) params.set('name', studentSearch);
+      if (studentSubjectFilter) params.set('subject', studentSubjectFilter);
+      if (studentGradeFilter) params.set('grade', studentGradeFilter);
+      const res = await fetch(`/api/students/search?${params.toString()}`);
+      const data = await res.json();
+      setStudentResults(Array.isArray(data) ? data : []);
+    } catch {
+      setStudentResults([]);
+    }
+    setStudentsLoading(false);
+  }, [studentSearch, studentSubjectFilter, studentGradeFilter]);
+
+  useEffect(() => {
+    if (user && activeTab === 'find-students') {
+      searchStudents();
+    }
+  }, [user, activeTab, searchStudents]);
+
+  const sendOutreachMessage = async (studentId) => {
+    if (!outreachMessage.trim()) return;
+    setSendingOutreach(true);
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiverId: studentId, content: outreachMessage }),
+      });
+      if (res.ok) {
+        setOutreachSent(studentId);
+        setOutreachMessage('');
+        setMessageStudent(null);
+        setTimeout(() => setOutreachSent(''), 3000);
+      }
+    } catch {}
+    setSendingOutreach(false);
+  };
+
   const formatLabel = {
     online: 'Online Only',
     'in-person': 'In-Person Only',
@@ -220,6 +272,7 @@ export default function TutorDashboard() {
   const tabs = [
     { id: 'sessions', label: 'Upcoming Sessions' },
     { id: 'messages', label: 'Messages (Tutor)' },
+    { id: 'find-students', label: 'Find Students' },
     { id: 'group-sessions', label: 'Group Sessions' },
     { id: 'profile', label: 'My Profile' },
   ];
@@ -322,6 +375,140 @@ export default function TutorDashboard() {
                     <span className="text-2xl">💬</span>
                   </div>
                   <p className="text-sm font-bold tracking-tight">Select a thread to continue</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Find Students Tab */}
+        {activeTab === 'find-students' && (
+          <div className="max-w-4xl mx-auto">
+            <div className="premium-card p-10 shadow-red-900/[0.02]">
+              <div className="mb-10">
+                <h2 className="text-3xl font-bold tracking-tight text-stone-900 mb-2">Find Students</h2>
+                <p className="text-stone-400 text-sm font-medium">Browse students and reach out to offer your tutoring services.</p>
+              </div>
+
+              {/* Search & Filters */}
+              <div className="flex flex-wrap gap-4 mb-8">
+                <input
+                  type="text"
+                  placeholder="Search by name..."
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && searchStudents()}
+                  className="flex-1 min-w-[200px] px-5 py-3 bg-stone-50 border border-stone-200 rounded-2xl text-sm outline-none focus:border-red-400 focus:ring-8 focus:ring-red-500/5 transition-all"
+                />
+                <select
+                  value={studentSubjectFilter}
+                  onChange={(e) => setStudentSubjectFilter(e.target.value)}
+                  className="px-5 py-3 bg-stone-50 border border-stone-200 rounded-2xl text-sm outline-none focus:border-red-400 cursor-pointer"
+                >
+                  <option value="">All Subjects</option>
+                  {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <select
+                  value={studentGradeFilter}
+                  onChange={(e) => setStudentGradeFilter(e.target.value)}
+                  className="px-5 py-3 bg-stone-50 border border-stone-200 rounded-2xl text-sm outline-none focus:border-red-400 cursor-pointer"
+                >
+                  <option value="">All Grades</option>
+                  {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
+                </select>
+                <button
+                  onClick={searchStudents}
+                  className="px-8 py-3 bg-stone-900 text-white rounded-2xl text-sm font-bold hover:bg-red-600 transition-all border-0 cursor-pointer shadow-lg shadow-stone-900/10 active:scale-95"
+                >
+                  Search
+                </button>
+              </div>
+
+              {/* Results */}
+              {studentsLoading ? (
+                <div className="text-center py-20 text-stone-400 text-sm">Searching...</div>
+              ) : studentResults.length === 0 ? (
+                <div className="text-center py-20 bg-stone-50/50 rounded-[32px] border border-dashed border-stone-200">
+                  <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-stone-100">
+                    <span className="text-3xl">🔍</span>
+                  </div>
+                  <p className="text-lg font-bold text-stone-900 tracking-tight">No students found</p>
+                  <p className="text-sm text-stone-400 mt-2 max-w-xs mx-auto leading-relaxed">Try adjusting your filters or check back later as more students sign up.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {studentResults.map(student => (
+                    <div key={student.id} className="bg-white border border-stone-100 rounded-[28px] p-8 shadow-sm hover:shadow-xl hover:shadow-red-900/[0.03] transition-all relative group">
+                      <div className="flex items-start gap-5 mb-5">
+                        <div className="w-14 h-14 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-600 font-bold text-lg flex-shrink-0 shadow-sm group-hover:bg-red-100 group-hover:text-red-600 transition-colors">
+                          {student.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-bold text-stone-900 tracking-tight truncate">{student.name}</h3>
+                          <div className="flex items-center gap-3 mt-1 flex-wrap">
+                            {student.grade && (
+                              <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-400 bg-stone-50 px-2.5 py-1 rounded-lg border border-stone-100">{student.grade} Grade</span>
+                            )}
+                            {student.zip_code && (
+                              <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-400 bg-stone-50 px-2.5 py-1 rounded-lg border border-stone-100">ZIP {student.zip_code}</span>
+                            )}
+                            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-red-600 bg-red-50 px-2.5 py-1 rounded-lg border border-red-100/50 capitalize">{student.format_pref}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {student.subjects.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-5">
+                          {student.subjects.map((s, i) => (
+                            <span key={i} className="bg-stone-50 text-stone-600 px-3 py-1 rounded-xl text-[10px] font-bold border border-stone-100 uppercase tracking-widest">{s}</span>
+                          ))}
+                        </div>
+                      )}
+
+                      {student.school && (
+                        <p className="text-xs text-stone-400 font-medium mb-5 truncate">School: {student.school}</p>
+                      )}
+
+                      {outreachSent === student.id ? (
+                        <div className="bg-emerald-50 text-emerald-700 text-sm font-bold px-5 py-3 rounded-2xl border border-emerald-100 text-center">
+                          Message sent! Check your Messages tab.
+                        </div>
+                      ) : messageStudent === student.id ? (
+                        <div className="space-y-3">
+                          <textarea
+                            value={outreachMessage}
+                            onChange={(e) => setOutreachMessage(e.target.value)}
+                            placeholder={`Hi ${student.name}, I'd love to help you with...`}
+                            rows={3}
+                            className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-2xl text-sm outline-none focus:border-red-400 focus:ring-8 focus:ring-red-500/5 transition-all resize-none"
+                            autoFocus
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => sendOutreachMessage(student.id)}
+                              disabled={sendingOutreach || !outreachMessage.trim()}
+                              className="flex-1 bg-red-600 text-white py-3 rounded-2xl text-xs font-bold uppercase tracking-widest hover:bg-stone-900 transition-all border-0 cursor-pointer disabled:opacity-50 shadow-lg shadow-red-600/10 active:scale-95"
+                            >
+                              {sendingOutreach ? 'Sending...' : 'Send Message'}
+                            </button>
+                            <button
+                              onClick={() => { setMessageStudent(null); setOutreachMessage(''); }}
+                              className="px-5 py-3 bg-stone-50 text-stone-400 rounded-2xl text-xs font-bold uppercase tracking-widest hover:text-stone-900 transition-all border border-stone-100 cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setMessageStudent(student.id)}
+                          className="w-full bg-stone-900 text-white py-3.5 rounded-2xl text-xs font-bold uppercase tracking-widest hover:bg-red-600 transition-all border-0 cursor-pointer shadow-lg shadow-stone-900/10 active:scale-95"
+                        >
+                          Send Message
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
